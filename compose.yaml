@@ -1,0 +1,52 @@
+﻿services:
+  mongodb:
+    image: mongo:7.0
+    container_name: multitenants-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: multitenants
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - multitenants-network
+
+  postgresql:
+    image: postgres:16-alpine
+    container_name: multitenants-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: multitenants
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - multitenants-network
+
+  api:
+    build:
+      context: .
+      dockerfile: MultiTenants.Boilerplate.HttpApi/Dockerfile
+    container_name: multitenants-api
+    ports:
+      - "5000:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MongoDB=mongodb://mongodb:27017
+      - ConnectionStrings__PostgreSQL=Host=postgresql;Port=5432;Database=multitenants;Username=postgres;Password=postgres
+      - MongoDB__DatabaseName=multitenants
+    depends_on:
+      - mongodb
+      - postgresql
+    networks:
+      - multitenants-network
+
+volumes:
+  mongodb_data:
+  postgres_data:
+
+networks:
+  multitenants-network:
+    driver: bridge

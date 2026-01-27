@@ -1,0 +1,6 @@
+@MultiTenants.Boilerplate.Application_HostAddress = http://localhost:5268
+
+GET {{MultiTenants.Boilerplate.Application_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

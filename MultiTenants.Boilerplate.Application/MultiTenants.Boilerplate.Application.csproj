@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="MediatR" Version="14.0.0" />
+      <PackageReference Include="Marten" Version="8.0.0" />
+      <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
+      <PackageReference Include="Finbuckle.MultiTenant.Abstractions" Version="10.0.2" />
+      <PackageReference Include="Finbuckle.MultiTenant.AspNetCore" Version="10.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="10.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MultiTenants.Boilerplate.Domain\MultiTenants.Boilerplate.Domain.csproj" />
+      <ProjectReference Include="..\MultiTenants.Boilerplate.Shared\MultiTenants.Boilerplate.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Microsoft.AspNetCore.Authentication.Google">
+        <HintPath>..\..\..\.nuget\packages\microsoft.aspnetcore.authentication.google\10.0.2\lib\net10.0\Microsoft.AspNetCore.Authentication.Google.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>
