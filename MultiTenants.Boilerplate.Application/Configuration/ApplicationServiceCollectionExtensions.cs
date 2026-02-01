@@ -3,12 +3,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MultiTenants.Boilerplate.Application.Stores;
+using MultiTenants.Boilerplate.Application.Helpers;
 using MongoDB.Driver;
 using Marten;
 
 namespace MultiTenants.Boilerplate.Application.Configuration;
 
-public static class ApplicationServiceCollectionExtensions
+public static class ApplicationConfiguration
 {
     public static IServiceCollection AddApplication(
         this IServiceCollection services,
@@ -18,8 +19,8 @@ public static class ApplicationServiceCollectionExtensions
 
         services.AddHttpContextAccessor();
 
-        var mongoConnectionString = configuration.GetConnectionString("MongoDB")
-            ?? "mongodb://localhost:27017";
+        var mongoConnectionString = configuration.GetRequiredConfigurationValue("MongoDB");
+
         var mongoClient = new MongoClient(mongoConnectionString);
         var databaseName = configuration.GetValue<string>("MongoDB:DatabaseName") ?? "multitenants";
         services.AddSingleton<IMongoClient>(mongoClient);
