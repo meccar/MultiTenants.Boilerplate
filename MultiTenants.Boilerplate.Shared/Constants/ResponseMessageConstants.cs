@@ -12,5 +12,4 @@ public static class ResponseMessageConstants
     public const string Forbidden = "FORBIDDEN";
     public const string InternalServerError = "INTERNAL_SERVER_ERROR";
     public const string ValidationError = "VALIDATION_ERROR";
-
 }

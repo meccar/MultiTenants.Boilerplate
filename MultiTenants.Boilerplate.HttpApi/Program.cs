@@ -4,6 +4,8 @@ using Finbuckle.MultiTenant.AspNetCore.Extensions;
 using Finbuckle.MultiTenant.Extensions;
 using Microsoft.OpenApi;
 using MultiTenants.Boilerplate.Application.Configuration;
+using MultiTenants.Boilerplate.Configurations;
+using MultiTenants.Boilerplate.Middlewares;
 using MultiTenants.Boilerplate.Shared.Constants;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,6 +50,8 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 builder.Services.AddApplication(builder.Configuration);
+builder.Services.AddCorsConfiguration(builder.Configuration);
+builder.Services.AddRateLimitingConfiguration(builder.Configuration);
 
 // Retrieve and validate Google OAuth credentials
 var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
@@ -116,6 +120,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseGlobalExceptionHandling();
+app.UseCors("AllowConfiguredOrigins");
+app.UseRateLimiter();
 
 // Multi-tenant middleware must be before authentication
 app.UseMultiTenant();

@@ -1,11 +1,14 @@
-using System.Reflection;
+using Marten;
+using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MultiTenants.Boilerplate.Application.Stores;
-using MultiTenants.Boilerplate.Application.Helpers;
 using MongoDB.Driver;
-using Marten;
+using MultiTenants.Boilerplate.Application.Behaviors;
+using MultiTenants.Boilerplate.Application.Helpers;
+using MultiTenants.Boilerplate.Application.Stores;
+using System.Reflection;
+using FluentValidation;
 
 namespace MultiTenants.Boilerplate.Application.Configuration;
 
@@ -15,8 +18,14 @@ public static class ApplicationConfiguration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+        services.AddMediatR(cfg =>
+        {
+            cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
+            cfg.AddBehavior(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        });
 
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
         services.AddHttpContextAccessor();
 
         var mongoConnectionString = configuration.GetRequiredConfigurationValue("MongoDB");
@@ -32,8 +41,6 @@ public static class ApplicationConfiguration
         services.AddMarten(options =>
         {
             options.Connection(postgresConnectionString);
-            // Note: If you need to store IdentityUser in Marten, configure it here
-            // For now, Identity is stored in MongoDB
         });
 
         services.AddIdentity<IdentityUser, IdentityRole>(options =>
