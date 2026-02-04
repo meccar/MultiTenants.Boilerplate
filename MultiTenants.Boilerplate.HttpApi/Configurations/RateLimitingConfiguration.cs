@@ -11,6 +11,7 @@ public static class RateLimitingConfiguration
         var permitLimit = rateLimitConfig.GetValue<int>("PermitLimit", 100);
         var windowSeconds = rateLimitConfig.GetValue<int>("WindowSizeSeconds", 60);
         var queueLimit = rateLimitConfig.GetValue<int>("QueueLimit", 2);
+        var segmentsPerWindow = rateLimitConfig.GetValue<int>("SegmentsPerWindow", 2);
 
         services.AddRateLimiter(options =>
         {
@@ -27,6 +28,7 @@ public static class RateLimitingConfiguration
                         QueueLimit = queueLimit,
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                         Window = TimeSpan.FromSeconds(windowSeconds),
+                        SegmentsPerWindow = segmentsPerWindow,
                     });
             });
             options.OnRejected = async (ctx, cancellationToken) =>
