@@ -28,56 +28,56 @@ public class GlobalExceptionHandlingMiddleware
     }
 
     private static Task HandleExceptionAsync(
-        HttpContext context, Exception exception
+        HttpContext ctx, Exception ex
     ) {
-        context.Response.ContentType = "application/json";
+        ctx.Response.ContentType = "application/json";
 
         var response = new ApiResponse<object>();
-        response.TraceId = context.TraceIdentifier;
+        response.TraceId = ctx.TraceIdentifier;
 
-        switch(exception)
+        switch(ex)
         {
             case ArgumentNullException:
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 response = ApiResponse<object>.BadRequest(
-                    message: exception.Message
+                    message: ex.Message
                 );
                 break;
             case ArgumentException:
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 response = ApiResponse<object>.BadRequest(
-                    message: exception.Message
+                    message: ex.Message
                 );
                 break;
             case InvalidOperationException:
-                context.Response.StatusCode = StatusCodes.Status409Conflict;
+                ctx.Response.StatusCode = StatusCodes.Status409Conflict;
                 response = ApiResponse<object>.FailureResponse(
                     statusCode: System.Net.HttpStatusCode.Conflict,
-                    message: exception.Message
+                    message: ex.Message
                 );
                 break;
             case KeyNotFoundException:
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                ctx.Response.StatusCode = StatusCodes.Status404NotFound;
                 response = ApiResponse<object>.NotFound(
                     message: ResponseMessageConstants.NotFound
                 );
                 break;
             case UnauthorizedAccessException:
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                ctx.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 response = ApiResponse<object>.Unauthorized(
-                    message: exception.Message
+                    message: ex.Message
                 );
                 break;
             default:
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
                 response = ApiResponse<object>.InternalServerError(
                     message: ResponseMessageConstants.InternalServerError
                 );
                 break;
         }
 
-        response.StatusCode = (System.Net.HttpStatusCode)context.Response.StatusCode;
-        return context.Response.WriteAsJsonAsync(response);
+        response.StatusCode = (System.Net.HttpStatusCode)ctx.Response.StatusCode;
+        return ctx.Response.WriteAsJsonAsync(response);
     }
 }
 
