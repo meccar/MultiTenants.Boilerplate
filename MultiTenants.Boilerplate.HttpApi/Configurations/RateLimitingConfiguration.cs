@@ -9,7 +9,7 @@ public static class RateLimitingConfiguration
     ) {
         var rateLimitConfig = configuration.GetSection("RateLimiting");
         var permitLimit = rateLimitConfig.GetValue<int>("PermitLimit", 100);
-        var windowSeconds = rateLimitConfig.GetValue<int>("WindowSeconds", 60);
+        var windowSeconds = rateLimitConfig.GetValue<int>("WindowSizeSeconds", 60);
         var queueLimit = rateLimitConfig.GetValue<int>("QueueLimit", 2);
 
         services.AddRateLimiter(options =>

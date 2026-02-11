@@ -25,6 +25,50 @@
     networks:
       - multitenants-network
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: multitenants-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - multitenants-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: multitenants-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - multitenants-network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: multitenants-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - multitenants-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: multitenants-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - multitenants-network
+
   api:
     build:
       context: .
@@ -36,6 +80,9 @@
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__MongoDB=mongodb://mongodb:27017
       - ConnectionStrings__PostgreSQL=Host=postgresql;Port=5432;Database=multitenants;Username=postgres;Password=postgres
+      - ConnectionStrings__RabbitMQ=amqp://guest:guest@rabbitmq:5672/
+      - ConnectionStrings__Kafka=kafka:9092
+      - ConnectionStrings__Redis=redis:6379
       - MongoDB__DatabaseName=multitenants
     depends_on:
       - mongodb
