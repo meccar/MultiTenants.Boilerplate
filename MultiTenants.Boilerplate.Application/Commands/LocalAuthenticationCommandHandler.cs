@@ -89,8 +89,21 @@ public class LocalAuthenticationCommandHandler : IRequestHandler<LocalAuthentica
 
   private async Task<IdentityUser?> GetUserAsync(string userName)
   {
-    return await _userManager.FindByNameAsync(userName)
+    var user = await _userManager.FindByNameAsync(userName)
       ?? await _userManager.FindByEmailAsync(userName);
+
+    if (user == null)
+        return null;
+
+    var claims = await _userManager.GetClaimsAsync(user);
+    var userTenantId = claims.FirstOrDefault(c => c.Type == "tenant_id")?.Value;
+
+    if (userTenantId == null || userTenantId != _tenantContextAccessor.MultiTenantContext.TenantInfo?.Id)
+    {
+      _logger.LogWarning("User {UserName} does not belong to tenant {TenantId}", 
+          MaskInput(userName), _tenantContextAccessor.MultiTenantContext.TenantInfo?.Id);
+      return null;
+    }
   }
 
   private async Task<string> GenerateJwtTokenAsync(
