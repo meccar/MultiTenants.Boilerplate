@@ -16,7 +16,8 @@ namespace MultiTenants.Boilerplate.Application.Commands;
 public class LocalAuthenticationCommandHandler : IRequestHandler<LocalAuthenticationCommand, Result<string>>
 {
   private readonly UserManager<IdentityUser> _userManager;
-  private readonly IMultiTenantContextAccessor<TenantInfo> _tenantContextAccessor;
+  private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly IMultiTenantContextAccessor<TenantInfo> _tenantContextAccessor;
   private readonly IHttpContextAccessor _httpContextAccessor;
   private readonly IConfiguration _configuration;
   private readonly ILogger<LocalAuthenticationCommandHandler> _logger;
@@ -55,20 +56,6 @@ public class LocalAuthenticationCommandHandler : IRequestHandler<LocalAuthentica
       return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
     }
 
-    if (await _userManager.IsLockedOutAsync(user))
-    {
-      _logger.LogWarning("Login blocked: User {UserId} is locked out in tenant {TenantId}", 
-          user.Id, tenant.Id);
-      return Result<string>.Failure("Account is locked");
-    }
-
-    if (user.LockoutEnabled || user.LockoutEnd > DateTime.UtcNow)
-    { 
-      _logger.LogWarning("Login blocked: User {UserId} is disabled out in tenant {TenantId}", 
-          user.Id, tenant.Id);
-      return Result<string>.Failure("Account is locked");
-    }
-
     if (!await _userManager.IsEmailConfirmedAsync(user))
     { 
       _logger.LogWarning("Login failed: User {UserId} email is not confirmed in tenant {TenantId}", 
@@ -76,17 +63,21 @@ public class LocalAuthenticationCommandHandler : IRequestHandler<LocalAuthentica
       return Result<string>.Failure("User email is not confirmed");
     }
 
-    if (!await _userManager.CheckPasswordAsync(user, request.Password))
-    {
-        _logger.LogWarning("Login failed: Invalid password attempt for user {UserId} in tenant {TenantId}." +
-            "Failed attempts: {FailedCount}", 
-                user.Id, tenant.Id, user.AccessFailedCount);
-        await _userManager.AccessFailedAsync(user);
-        return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
-    }
+    var result = await _signInManager.PasswordSignInAsync(
+        user.UserName!,
+        request.Password,
+        isPersistent: request.IsPersistent,
+        lockoutOnFailure: true
+    );
 
-    if (user.AccessFailedCount > 0)
-        await _userManager.ResetAccessFailedCountAsync(user);
+    if (result.IsLockedOut)
+        return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
+
+    if (result.RequiresTwoFactor)
+        return Result<string>.Failure("2FA_REQUIRED");
+
+    if (!result.Succeeded)
+        return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
 
     var token = await GenerateJwtTokenAsync(user, tenant);
 

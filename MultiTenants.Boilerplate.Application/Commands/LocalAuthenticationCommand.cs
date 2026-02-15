@@ -5,4 +5,6 @@ namespace MultiTenants.Boilerplate.Application.Commands;
 
 public record LocalAuthenticationCommand(
   string UserName,
-  string Password) : IRequest<Result<string>>;
+  string Password,
+  bool IsPersistent = false
+) : IRequest<Result<string>>;
