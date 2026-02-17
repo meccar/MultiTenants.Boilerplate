@@ -1,7 +1,7 @@
 using MediatR;
 using MultiTenants.Boilerplate.Shared.Utilities;
 
-namespace MultiTenants.Boilerplate.Application.Commands;
+namespace MultiTenants.Boilerplate.Application.Helpers;
 
 public record LocalAuthenticationCommand(
   string UserName,

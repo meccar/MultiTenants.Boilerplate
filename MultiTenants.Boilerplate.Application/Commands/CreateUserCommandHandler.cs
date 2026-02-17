@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using MultiTenants.Boilerplate.Shared.Utilities;
 using Finbuckle.MultiTenant.Abstractions;
 
-namespace MultiTenants.Boilerplate.Application.Commands;
+namespace MultiTenants.Boilerplate.Application.Helpers;
 
 public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<string>>
 {
