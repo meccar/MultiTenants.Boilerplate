@@ -28,8 +28,7 @@ public class LocalAuthenticationCommandHandler
         IConfiguration configuration,
         ILogger<LocalAuthenticationCommandHandler> logger,
         JwtToken jwtToken
-    )
-    {
+    ){
         _userManager = userManager;
         _signInManager = signInManager;
         _tenantContextAccessor = tenantContextAccessor;
@@ -46,6 +45,13 @@ public class LocalAuthenticationCommandHandler
         { 
             _logger.LogWarning("Login attempted without tenant context");
             return Result<string>.Failure("Tenant context not found");
+        }
+
+        if (tenant.Id != request.TenantId)
+        {
+            _logger.LogWarning("OAuth tenant mismatch: requested {Requested}, context {Context}",
+                request.TenantId, tenant.Id);
+            return Result<string>.Failure("Tenant mismatch");
         }
 
         var user = await GetUserAsync(request.UserName);
@@ -113,12 +119,9 @@ public class LocalAuthenticationCommandHandler
         var claims = await _userManager.GetClaimsAsync(user);
         var userTenantId = claims.FirstOrDefault(c => c.Type == "tenant_id")?.Value;
 
-        if (userTenantId == null || userTenantId != _tenantContextAccessor.MultiTenantContext.TenantInfo?.Id)
-        {
-            _logger.LogWarning("User {UserName} does not belong to tenant {TenantId}",
-                StringHelper.MaskInput(userName), _tenantContextAccessor.MultiTenantContext.TenantInfo?.Id);
+        if (userTenantId == null 
+        || userTenantId != _tenantContextAccessor.MultiTenantContext.TenantInfo?.Id)
             return null;
-        }
 
         return user;
     }

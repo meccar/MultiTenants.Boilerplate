@@ -5,10 +5,19 @@ using System.Security.Claims;
 
 namespace MultiTenants.Boilerplate.Application.Stores;
 
+internal sealed class UserClaim
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string UserId { get; set; } = "";
+    public string ClaimType { get; set; } = "";
+    public string? ClaimValue { get; set; }
+}
+
 public class MongoUserStore : IUserPasswordStore<IdentityUser>, IUserEmailStore<IdentityUser>, IUserClaimStore<IdentityUser>
 {
   private readonly ILogger<MongoUserStore> _logger;
     private readonly IMongoCollection<IdentityUser> _users;
+    private readonly IMongoCollection<UserClaim> _userClaims;
 
     public MongoUserStore(
         IMongoDatabase database,
@@ -17,6 +26,7 @@ public class MongoUserStore : IUserPasswordStore<IdentityUser>, IUserEmailStore<
     {
       _logger = logger;
         _users = database.GetCollection<IdentityUser>("Users");
+        _userClaims = database.GetCollection<UserClaim>("UserClaims");
     }
     // Note: Finbuckle's WithPerTenantAuthentication automatically handles tenant isolation
     // The UserManager layer ensures all operations are tenant-scoped
@@ -154,34 +164,51 @@ public class MongoUserStore : IUserPasswordStore<IdentityUser>, IUserEmailStore<
         return Task.CompletedTask;
     }
 
-    public Task<IList<Claim>> GetClaimsAsync(IdentityUser user, CancellationToken cancellationToken)
+    public async Task<IList<Claim>> GetClaimsAsync(IdentityUser user, CancellationToken cancellationToken)
     {
-        // For simplicity, returning empty list. Can be extended to store claims in MongoDB
-        return Task.FromResult<IList<Claim>>(new List<Claim>());
+        var claims = await _userClaims.Find(uc => uc.UserId == user.Id).ToListAsync(cancellationToken);
+        return claims.Select(uc => new Claim(uc.ClaimType, uc.ClaimValue ?? "")).ToList();
     }
 
-    public Task AddClaimsAsync(IdentityUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+    public async Task AddClaimsAsync(IdentityUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
-        // Can be implemented to store claims in MongoDB
-        return Task.CompletedTask;
+        var docs = claims.Select(c => new UserClaim { UserId = user.Id, ClaimType = c.Type, ClaimValue = c.Value });
+        await _userClaims.InsertManyAsync(docs, cancellationToken: cancellationToken);
     }
 
-    public Task ReplaceClaimAsync(IdentityUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
+    public async Task ReplaceClaimAsync(IdentityUser user, Claim claim, Claim newClaim, CancellationToken cancellationToken)
     {
-        // Can be implemented to update claims in MongoDB
-        return Task.CompletedTask;
+        await _userClaims.UpdateManyAsync(
+            uc => uc.UserId == user.Id && uc.ClaimType == claim.Type && uc.ClaimValue == claim.Value,
+            Builders<UserClaim>.Update.Combine(
+                Builders<UserClaim>.Update.Set(uc => uc.ClaimType, newClaim.Type),
+                Builders<UserClaim>.Update.Set(uc => uc.ClaimValue, newClaim.Value)),
+            cancellationToken: cancellationToken);
     }
 
-    public Task RemoveClaimsAsync(IdentityUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
+    public async Task RemoveClaimsAsync(IdentityUser user, IEnumerable<Claim> claims, CancellationToken cancellationToken)
     {
-        // Can be implemented to remove claims from MongoDB
-        return Task.CompletedTask;
+        foreach (var claim in claims)
+        {
+            await _userClaims.DeleteManyAsync(
+                uc => uc.UserId == user.Id && uc.ClaimType == claim.Type && uc.ClaimValue == claim.Value,
+                cancellationToken);
+        }
     }
 
-    public Task<IList<IdentityUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
+    public async Task<IList<IdentityUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken)
     {
-        // Can be implemented to query users by claim
-        return Task.FromResult<IList<IdentityUser>>(new List<IdentityUser>());
+        var userIds = await _userClaims
+            .Find(uc => uc.ClaimType == claim.Type && uc.ClaimValue == claim.Value)
+            .Project(uc => uc.UserId)
+            .ToListAsync(cancellationToken);
+        var users = new List<IdentityUser>();
+        foreach (var uid in userIds)
+        {
+            var u = await _users.Find(x => x.Id == uid).FirstOrDefaultAsync(cancellationToken);
+            if (u != null) users.Add(u);
+        }
+        return users;
     }
 
     public void Dispose()
