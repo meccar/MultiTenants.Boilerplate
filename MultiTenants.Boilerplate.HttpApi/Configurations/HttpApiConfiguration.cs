@@ -21,6 +21,9 @@ public static class HttpApiConfiguration
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        // API version and base path (from Api:Version in appsettings)
+        services.Configure<ApiOptions>(configuration.GetSection(ApiOptions.SectionName));
+
         // API Documentation
         services.AddSwaggerConfiguration(configuration);
 

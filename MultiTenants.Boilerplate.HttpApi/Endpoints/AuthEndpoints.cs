@@ -2,9 +2,13 @@ using Carter;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using MultiTenants.Boilerplate.Application.Abstractions;
 using MultiTenants.Boilerplate.Application.Services;
+using MultiTenants.Boilerplate.Configurations;
+using MultiTenants.Boilerplate.Infrastructure.Identity;
 using MultiTenants.Boilerplate.Shared.Constants;
 using MultiTenants.Boilerplate.Shared.Responses;
+using Microsoft.Extensions.Options;
 using System.Net;
 
 namespace MultiTenants.Boilerplate.Endpoints;
@@ -14,7 +18,8 @@ public class AuthEndpoints : ICarterModule
     [Obsolete("Obsolete")]
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup($"{ApiConstants.ApiBasePath}/auth")
+        var basePath = app.GetApiBasePath();
+        var group = app.MapGroup($"{basePath}/auth")
             .WithTags("Authentication")
             .WithOpenApi();
 
@@ -108,7 +113,8 @@ public class AuthEndpoints : ICarterModule
 
     private static async Task<IResult> Register(
         [FromBody] RegisterRequest request,
-        [FromServices] UserManager<IdentityUser> userManager,
+        [FromServices] UserManager<AppUser> userManager,
+        [FromServices] ITenantProvider tenantProvider,
         [FromServices] IEmailSender emailSender,
         [FromServices] IConfiguration configuration,
         [FromServices] IHttpContextAccessor httpContextAccessor,
@@ -118,8 +124,9 @@ public class AuthEndpoints : ICarterModule
             return Results.Json(ApiResponse.BadRequest("Email and password are required."), statusCode: (int)HttpStatusCode.BadRequest);
 
         var userName = request.UserName ?? request.Email;
-        var user = new IdentityUser
+        var user = new AppUser
         {
+            TenantId = tenantProvider.GetCurrentTenantId() ?? string.Empty,
             UserName = userName,
             Email = request.Email,
             EmailConfirmed = false
@@ -147,7 +154,7 @@ public class AuthEndpoints : ICarterModule
 
     private static async Task<IResult> Login(
         [FromBody] LoginRequest request,
-        [FromServices] SignInManager<IdentityUser> signInManager,
+        [FromServices] SignInManager<AppUser> signInManager,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.EmailOrUserName) || string.IsNullOrWhiteSpace(request.Password))
@@ -178,7 +185,7 @@ public class AuthEndpoints : ICarterModule
 
     private static async Task<IResult> ForgotPassword(
         [FromBody] ForgotPasswordRequest request,
-        [FromServices] UserManager<IdentityUser> userManager,
+        [FromServices] UserManager<AppUser> userManager,
         [FromServices] IEmailSender emailSender,
         [FromServices] IConfiguration configuration,
         [FromServices] IHttpContextAccessor httpContextAccessor,
@@ -205,7 +212,7 @@ public class AuthEndpoints : ICarterModule
 
     private static async Task<IResult> ResetPassword(
         [FromBody] ResetPasswordRequest request,
-        [FromServices] UserManager<IdentityUser> userManager,
+        [FromServices] UserManager<AppUser> userManager,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Token) || string.IsNullOrWhiteSpace(request.NewPassword))
@@ -228,7 +235,7 @@ public class AuthEndpoints : ICarterModule
     private static async Task<IResult> ConfirmEmail(
         [FromQuery] string userId,
         [FromQuery] string code,
-        [FromServices] UserManager<IdentityUser> userManager,
+        [FromServices] UserManager<AppUser> userManager,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(code))
@@ -250,7 +257,7 @@ public class AuthEndpoints : ICarterModule
 
     private static async Task<IResult> ResendEmailConfirmation(
         [FromBody] ResendEmailConfirmationRequest request,
-        [FromServices] UserManager<IdentityUser> userManager,
+        [FromServices] UserManager<AppUser> userManager,
         [FromServices] IEmailSender emailSender,
         [FromServices] IConfiguration configuration,
         [FromServices] IHttpContextAccessor httpContextAccessor,
@@ -281,8 +288,8 @@ public class AuthEndpoints : ICarterModule
     private static async Task<IResult> ChangePassword(
         [FromBody] ChangePasswordRequest request,
         HttpContext context,
-        [FromServices] UserManager<IdentityUser> userManager,
-        [FromServices] SignInManager<IdentityUser> signInManager,
+        [FromServices] UserManager<AppUser> userManager,
+        [FromServices] SignInManager<AppUser> signInManager,
         CancellationToken cancellationToken)
     {
         var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
@@ -305,11 +312,15 @@ public class AuthEndpoints : ICarterModule
         return Results.Json(ApiResponse.SuccessResponse("Password changed successfully."));
     }
 
-    private static IResult LoginWithGoogle(HttpContext context, [FromQuery] string? returnUrl = null)
+    private static IResult LoginWithGoogle(
+        HttpContext context,
+        [FromServices] IOptions<ApiOptions> apiOptions,
+        [FromQuery] string? returnUrl = null)
     {
+        var basePath = apiOptions.Value.BasePath;
         var properties = new AuthenticationProperties
         {
-            RedirectUri = returnUrl ?? $"{ApiConstants.ApiBasePath}/auth/login/google/callback"
+            RedirectUri = returnUrl ?? $"{basePath}/auth/login/google/callback"
         };
         return Results.Challenge(properties, new[] { AuthConstants.GoogleScheme });
     }
@@ -339,7 +350,7 @@ public class AuthEndpoints : ICarterModule
         return Results.Ok(userInfo);
     }
 
-    private static IResult GetTwoFactorStatus(HttpContext context, [FromServices] UserManager<IdentityUser> userManager)
+    private static IResult GetTwoFactorStatus(HttpContext context, [FromServices] UserManager<AppUser> userManager)
     {
         var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
             ?? context.User.FindFirst("sub")?.Value;
@@ -353,7 +364,7 @@ public class AuthEndpoints : ICarterModule
 
     private static async Task<IResult> GetManageInfo(
         HttpContext context,
-        [FromServices] UserManager<IdentityUser> userManager)
+        [FromServices] UserManager<AppUser> userManager)
     {
         var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
             ?? context.User.FindFirst("sub")?.Value;
@@ -379,8 +390,8 @@ public class AuthEndpoints : ICarterModule
     private static async Task<IResult> UpdateManageInfo(
         [FromBody] UpdateManageInfoRequest request,
         HttpContext context,
-        [FromServices] UserManager<IdentityUser> userManager,
-        [FromServices] SignInManager<IdentityUser> signInManager,
+        [FromServices] UserManager<AppUser> userManager,
+        [FromServices] SignInManager<AppUser> signInManager,
         CancellationToken cancellationToken)
     {
         var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
@@ -414,8 +425,8 @@ public class AuthEndpoints : ICarterModule
     private static async Task<IResult> DeletePersonalData(
         [FromBody] DeletePersonalDataRequest request,
         HttpContext context,
-        [FromServices] UserManager<IdentityUser> userManager,
-        [FromServices] SignInManager<IdentityUser> signInManager,
+        [FromServices] UserManager<AppUser> userManager,
+        [FromServices] SignInManager<AppUser> signInManager,
         CancellationToken cancellationToken)
     {
         var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value

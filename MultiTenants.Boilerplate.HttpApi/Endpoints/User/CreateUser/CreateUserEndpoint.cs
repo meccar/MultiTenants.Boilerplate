@@ -1,8 +1,9 @@
 using Carter;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using MultiTenants.Boilerplate.Endpoints.User.CreateUser;
-using MultiTenants.Boilerplate.Shared.Constants;
+using Microsoft.Extensions.Options;
+using MultiTenants.Boilerplate.Application.Commands;
+using MultiTenants.Boilerplate.Configurations;
 
 namespace MultiTenants.Boilerplate.Endpoints.User.CreateUser;
 
@@ -11,7 +12,8 @@ public class CreateUserEndpoint : ICarterModule
     [Obsolete("Obsolete")]
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup($"{ApiConstants.ApiBasePath}/users")
+        var basePath = app.GetApiBasePath();
+        var group = app.MapGroup($"{basePath}/users")
             .WithTags("Users")
             .WithOpenApi();
 
@@ -25,6 +27,7 @@ public class CreateUserEndpoint : ICarterModule
     private static async Task<IResult> CreateUser(
         [FromBody] CreateUserCommand command,
         IMediator mediator,
+        IOptions<ApiOptions> apiOptions,
         CancellationToken cancellationToken)
     {
         var result = await mediator.Send(command, cancellationToken);
@@ -34,7 +37,8 @@ public class CreateUserEndpoint : ICarterModule
             return Results.BadRequest(new { error = result.Error });
         }
 
-        return Results.Created($"/api/users/{result.Value}", new { id = result.Value });
+        var basePath = apiOptions.Value.BasePath;
+        return Results.Created($"{basePath}/users/{result.Value}", new { id = result.Value });
     }
 }
 

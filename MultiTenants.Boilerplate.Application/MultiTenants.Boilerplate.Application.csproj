@@ -9,7 +9,6 @@
     <ItemGroup>
       <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
-
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="12.1.1" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
@@ -17,11 +16,13 @@
       <PackageReference Include="Marten" Version="8.0.0" />
       <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
       <PackageReference Include="Finbuckle.MultiTenant.Abstractions" Version="10.0.2" />
-      <PackageReference Include="Finbuckle.MultiTenant.AspNetCore" Version="10.0.2" />
       <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
       <PackageReference Include="Confluent.Kafka" Version="2.3.0" />
       <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0" />
       <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.2" />
+      <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -29,10 +30,5 @@
       <ProjectReference Include="..\MultiTenants.Boilerplate.Shared\MultiTenants.Boilerplate.Shared.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Reference Include="Microsoft.AspNetCore.Authentication.Google">
-        <HintPath>..\..\..\.nuget\packages\microsoft.aspnetcore.authentication.google\10.0.2\lib\net10.0\Microsoft.AspNetCore.Authentication.Google.dll</HintPath>
-      </Reference>
-    </ItemGroup>
 
 </Project>

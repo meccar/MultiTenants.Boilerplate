@@ -1,5 +1,4 @@
-﻿using Finbuckle.MultiTenant.Abstractions;
-using Microsoft.AspNetCore.Identity;
+using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 
 namespace MultiTenants.Boilerplate.Application.Helpers;
+
 public class JwtToken
 {
     private readonly IConfiguration _configuration;
@@ -39,36 +39,33 @@ public class JwtToken
 
     private void ValidateJwtConfiguration()
     {
-        if (string.IsNullOrEmpty(_jwtKey) 
-            || string.IsNullOrEmpty(_jwtSecret) 
+        if (string.IsNullOrEmpty(_jwtKey)
+            || string.IsNullOrEmpty(_jwtSecret)
             || string.IsNullOrEmpty(_jwtIssuer)
             || string.IsNullOrEmpty(_jwtAudience)
-        ){
+        )
+        {
             _logger.LogError("JWT configuration is incomplete or missing");
             throw new InvalidOperationException("Jwt configuration is incomplete");
         }
     }
 
     public Task<string> GenerateJwtTokenAsync(
-        IdentityUser user,
+        Domain.Entities.User user,
         IList<string> roles,
-        TenantInfo tenant
-    ){
+        string tenantId
+    )
+    {
         var claims = new List<Claim>
         {
-            new Claim(
-                JwtRegisteredClaimNames.Sub, user.Id),
-            new Claim(
-                JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
-            new Claim(
-                JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(
-                "tenant_id", tenant.Id ?? ""),
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim("tenant_id", tenantId)
         };
 
         claims.AddRange(
-            roles.Select(
-                role => new Claim(ClaimTypes.Role, role)));
+            roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
         var credentials = new SigningCredentials(
             _signingKey,
@@ -129,7 +126,6 @@ public sealed class TokenValidationResult
     public bool IsValid { get; init; }
     public string? Error { get; init; }
 
-    // Populated on success
     public string? UserId { get; init; }
     public string? Username { get; init; }
     public string? TenantId { get; init; }

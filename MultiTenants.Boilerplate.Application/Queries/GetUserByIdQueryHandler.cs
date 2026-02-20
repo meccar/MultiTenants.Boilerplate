@@ -1,49 +1,41 @@
 using MediatR;
-using Microsoft.AspNetCore.Identity;
+using MultiTenants.Boilerplate.Application.Abstractions;
 using MultiTenants.Boilerplate.Application.DTOs;
 using MultiTenants.Boilerplate.Shared.Utilities;
-using Finbuckle.MultiTenant.Abstractions;
 
 namespace MultiTenants.Boilerplate.Application.Queries;
 
 public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<UserDto?>>
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly IMultiTenantContextAccessor<TenantInfo> _tenantContextAccessor;
+    private readonly IIdentityService _identityService;
+    private readonly ITenantProvider _tenantProvider;
 
     public GetUserByIdQueryHandler(
-        UserManager<IdentityUser> userManager,
-        IMultiTenantContextAccessor<TenantInfo> tenantContextAccessor)
+        IIdentityService identityService,
+        ITenantProvider tenantProvider)
     {
-        _userManager = userManager;
-        _tenantContextAccessor = tenantContextAccessor;
+        _identityService = identityService;
+        _tenantProvider = tenantProvider;
     }
 
     public async Task<Result<UserDto?>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
     {
-        var tenantContext = _tenantContextAccessor.MultiTenantContext;
-        if (tenantContext.TenantInfo == null)
-        {
+        if (_tenantProvider.GetCurrentTenantId() == null)
             return Result<UserDto?>.Failure("Tenant context not found");
-        }
 
-        // Finbuckle's UserManager automatically filters by tenant context
-        var user = await _userManager.FindByIdAsync(request.UserId);
+        var user = await _identityService.GetUserByIdAsync(request.UserId, cancellationToken);
         if (user == null)
-        {
             return Result<UserDto?>.Success(null);
-        }
 
         var userDto = new UserDto
         {
             Id = user.Id,
-            Email = user.Email ?? string.Empty,
-            UserName = user.UserName ?? string.Empty,
-            EmailConfirmed = user.EmailConfirmed
+            Email = user.Email,
+            UserName = user.UserName,
+            EmailConfirmed = user.EmailConfirmed,
+            CreatedAt = user.CreatedAt ?? DateTime.MinValue
         };
 
         return Result<UserDto?>.Success(userDto);
     }
 }
-
-

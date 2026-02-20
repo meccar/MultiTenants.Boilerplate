@@ -1,5 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MultiTenants.Boilerplate.Application.Helpers;
+using MultiTenants.Boilerplate.Application.Services;
 
 namespace MultiTenants.Boilerplate.Application.Configuration;
 
@@ -31,9 +33,11 @@ public static class ApplicationConfiguration
         services.AddMongoDb(configuration);
         services.AddPostgreSQL(configuration);
 
-        // Identity and Authentication
-        services.AddIdentityServices();
-        services.AddAuthenticationConfiguration();
+        // Email sender for auth endpoints (confirmation, password reset emails)
+        services.AddScoped<IEmailSender, LoggingEmailSender>();
+
+        // JWT token generation for auth command handlers (LocalAuthentication, OAuthAuthentication)
+        services.AddScoped<JwtToken>();
 
         // Optional Services (only registered if configured)
         services.AddMessageBroker(configuration);

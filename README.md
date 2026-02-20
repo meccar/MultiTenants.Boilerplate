@@ -184,6 +184,8 @@ builder.Services.AddHttpApi(builder.Configuration);     // 4. HttpApi Layer
    - **Message Broker**: Set `MessageBroker:Type` to `"rabbitmq"` or `"kafka"` (or omit to disable)
    - **Caching**: Set `Caching:Type` to `"redis"` for distributed cache, or `"memory"` (default) for in-memory
 
+4. **Identity database provider**: The Identity store (ASP.NET Identity with EF Core) uses **SQL Server** by default. To use PostgreSQL or MySQL, set `Database:Provider` (or `DatabaseProvider`) to `"PostgreSQL"` or `"MySQL"` and set the connection string in `ConnectionStrings:DefaultConnection`. The Infrastructure project already references Npgsql and Pomelo; switching DB is config + connection string only. (MySQL support with EF Core 10 may require a Pomelo version compatible with EF Core 10 when available.)
+
 ### Running with Docker
 
 ```bash
@@ -245,7 +247,7 @@ Example: `/tenant1/api/users`
 ### Database & Storage
 - **MongoDB**: NoSQL database for primary storage
 - **Marten**: Document database and event store (PostgreSQL)
-- **ASP.NET Identity**: Authentication and authorization with MongoDB stores
+- **ASP.NET Identity**: Authentication and authorization with **EF Core** (SQL Server by default; PostgreSQL/MySQL via config). See [docs/BREAKING_CHANGES.md](docs/BREAKING_CHANGES.md) for the migration from MongoDB Identity.
 
 ### Infrastructure
 - **Finbuckle.MultiTenant**: Multi-tenancy support
@@ -260,6 +262,7 @@ Example: `/tenant1/api/users`
 
 ## Documentation
 
+- **[docs/BREAKING_CHANGES.md](docs/BREAKING_CHANGES.md)** - Breaking changes (e.g. Identity: MongoDB → EF Core)
 - **[DI_REGISTRATION_PATTERN.md](DI_REGISTRATION_PATTERN.md)** - Dependency injection pattern and layer structure
 - **[SERVICE_REGISTRATION_GUIDE.md](SERVICE_REGISTRATION_GUIDE.md)** - Message broker and caching usage guide
 - **[MESSAGE_BROKER_AND_CACHING_SUMMARY.md](MESSAGE_BROKER_AND_CACHING_SUMMARY.md)** - Implementation summary

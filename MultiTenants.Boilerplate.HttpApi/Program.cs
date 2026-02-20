@@ -2,6 +2,7 @@ using Carter;
 using Finbuckle.MultiTenant.AspNetCore.Extensions;
 using MultiTenants.Boilerplate.Application.Configuration;
 using MultiTenants.Boilerplate.Domain.Configuration;
+using MultiTenants.Boilerplate.Infrastructure.Configuration;
 using MultiTenants.Boilerplate.Shared.Configuration;
 using MultiTenants.Boilerplate.Configurations;
 using MultiTenants.Boilerplate.Middlewares;
@@ -24,7 +25,10 @@ builder.Services.AddDomain();
 // 3. Application Layer (depends on Domain and Shared)
 builder.Services.AddApplication(builder.Configuration);
 
-// 4. HttpApi Layer (depends on all layers)
+// 4. Infrastructure Layer (Identity, EF Core, IIdentityService)
+builder.Services.AddInfrastructure(builder.Configuration);
+
+// 5. HttpApi Layer (depends on all layers)
 builder.Services.AddHttpApi(builder.Configuration);
 
 var app = builder.Build();
@@ -33,10 +37,11 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     var googleClientId = app.Configuration["Authentication:Google:ClientId"];
+    var apiVersion = app.Configuration["Api:Version"]?.Trim() ?? "v1";
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Multi-Tenant API v1");
+        c.SwaggerEndpoint($"/swagger/{apiVersion}/swagger.json", $"Multi-Tenant API {apiVersion}");
         // Only expose ClientId to Swagger UI (ClientId is public, ClientSecret should remain server-side only)
         // Swagger UI will use PKCE flow which doesn't require the client secret in the browser
         if (!string.IsNullOrWhiteSpace(googleClientId))

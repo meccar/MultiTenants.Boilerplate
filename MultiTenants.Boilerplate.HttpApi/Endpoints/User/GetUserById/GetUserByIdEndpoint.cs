@@ -1,7 +1,7 @@
 using Carter;
 using MediatR;
-using MultiTenants.Boilerplate.Endpoints.User.GetUserById;
-using MultiTenants.Boilerplate.Shared.Constants;
+using MultiTenants.Boilerplate.Application.Queries;
+using MultiTenants.Boilerplate.Configurations;
 
 namespace MultiTenants.Boilerplate.Endpoints.User.GetUserById;
 
@@ -10,7 +10,8 @@ public class GetUserByIdEndpoint : ICarterModule
     [Obsolete("Obsolete")]
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup($"{ApiConstants.ApiBasePath}/users")
+        var basePath = app.GetApiBasePath();
+        var group = app.MapGroup($"{basePath}/users")
             .WithTags("Users")
             .WithOpenApi();
 

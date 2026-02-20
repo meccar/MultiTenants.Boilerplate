@@ -18,12 +18,13 @@ public static class SwaggerConfiguration
     {
         services.AddControllers();
         services.AddEndpointsApiExplorer();
+        var apiVersion = configuration["Api:Version"]?.Trim() ?? "v1";
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc("v1", new OpenApiInfo
+            c.SwaggerDoc(apiVersion, new OpenApiInfo
             {
                 Title = "Multi-Tenant API",
-                Version = ApiConstants.ApiVersion,
+                Version = apiVersion,
                 Description = "Multi-tenant API with CQRS, MongoDB, and OAuth"
             });
 

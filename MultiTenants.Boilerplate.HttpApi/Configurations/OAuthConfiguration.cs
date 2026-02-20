@@ -47,7 +47,7 @@ public static class OAuthConfiguration
                 options.ClientId = googleClientId;
                 options.ClientSecret = googleClientSecret;
                 options.SignInScheme = AuthConstants.DefaultScheme;
-                options.CallbackPath = $"{ApiConstants.ApiBasePath}/auth/login/google/callback";
+                options.CallbackPath = $"/api/{configuration["Api:Version"]?.Trim() ?? "v1"}/auth/login/google/callback";
             });
 
         return services;
