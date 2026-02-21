@@ -1,4 +1,3 @@
-using Finbuckle.MultiTenant.Abstractions;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -14,7 +13,6 @@ public class OAuthAuthenticationCommandHandler
 {
     private readonly IIdentityService _identityService;
     private readonly ITenantProvider _tenantProvider;
-    private readonly IMultiTenantContextAccessor<TenantInfo> _tenantContextAccessor;
     private readonly IConfiguration _configuration;
     private readonly ILogger<OAuthAuthenticationCommandHandler> _logger;
     private readonly JwtToken _jwtToken;
@@ -23,18 +21,16 @@ public class OAuthAuthenticationCommandHandler
 
     public OAuthAuthenticationCommandHandler(
         IIdentityService identityService,
-        IMultiTenantContextAccessor<TenantInfo> tenantContextAccessor,
+        ITenantProvider tenantProvider,
         IConfiguration configuration,
         ILogger<OAuthAuthenticationCommandHandler> logger,
-        JwtToken jwtToken,
-        ITenantProvider tenantProvider)
+        JwtToken jwtToken)
     {
         _identityService = identityService;
-        _tenantContextAccessor = tenantContextAccessor;
+        _tenantProvider = tenantProvider;
         _configuration = configuration;
         _logger = logger;
         _jwtToken = jwtToken;
-        _tenantProvider = tenantProvider;
     }
 
     public async Task<Result<string>> Handle(OAuthAuthenticationCommand request, CancellationToken cancellationToken)

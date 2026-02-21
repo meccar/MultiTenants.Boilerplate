@@ -11,7 +11,7 @@ namespace MultiTenants.Boilerplate.Infrastructure.Data;
 /// All UserManager/RoleManager queries are automatically scoped by current tenant.
 /// Provider (SQL Server, PostgreSQL, etc.) is registered in DI; this class is provider-agnostic.
 /// </summary>
-public class AppIdentityDbContext : IdentityDbContext<AppUser, AppRole, string>
+public class AppDbContext : IdentityDbContext<AppUser, AppRole, string>
 {
     /// <summary>
     /// Set in constructor from ITenantProvider so query filters can be translated to SQL.
@@ -24,8 +24,8 @@ public class AppIdentityDbContext : IdentityDbContext<AppUser, AppRole, string>
     /// </summary>
     private const string NoTenantSentinel = "__no_tenant__";
 
-    public AppIdentityDbContext(
-        DbContextOptions<AppIdentityDbContext> options,
+    public AppDbContext(
+        DbContextOptions<AppDbContext> options,
         ITenantProvider tenantProvider)
         : base(options)
     {
@@ -35,7 +35,7 @@ public class AppIdentityDbContext : IdentityDbContext<AppUser, AppRole, string>
     /// <summary>
     /// Design-time constructor for EF Core tools (e.g. migrations). Do not use at runtime.
     /// </summary>
-    public AppIdentityDbContext(DbContextOptions<AppIdentityDbContext> options)
+    public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options)
     {
         CurrentTenantId = "__design_time__";
