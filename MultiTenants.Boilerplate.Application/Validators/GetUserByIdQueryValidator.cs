@@ -1,5 +1,5 @@
 using FluentValidation;
-using MultiTenants.Boilerplate.Application.Queries;
+using MultiTenants.Boilerplate.Application.Queries.GetCurrentUser;
 using MultiTenants.Boilerplate.Shared.Constants;
 
 namespace MultiTenants.Boilerplate.Application.Validators;

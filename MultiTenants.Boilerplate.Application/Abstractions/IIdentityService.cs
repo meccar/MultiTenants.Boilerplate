@@ -1,3 +1,4 @@
+using MultiTenants.Boilerplate.Application.DTOs;
 using MultiTenants.Boilerplate.Domain.Entities;
 using MultiTenants.Boilerplate.Shared.Utilities;
 
@@ -46,4 +47,36 @@ public interface IIdentityService
     /// Returns the list of role names for the user in the current tenant.
     /// </summary>
     Task<IReadOnlyList<string>> GetUserRolesAsync(string userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Signs out the current user.</summary>
+    Task SignOutAsync();
+
+    /// <summary>
+    /// Generates a password-reset token for the given email. Returns null if user not found.
+    /// </summary>
+    Task<string?> GeneratePasswordResetTokenAsync(string email, CancellationToken cancellationToken = default);
+
+    /// <summary>Resets a user's password using a reset token.</summary>
+    Task<Result> ResetPasswordAsync(string email, string token, string newPassword, CancellationToken cancellationToken = default);
+
+    /// <summary>Confirms a user's email address using a confirmation token.</summary>
+    Task<Result> ConfirmEmailAsync(string userId, string code, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generates a new email confirmation token for the given email.
+    /// Returns Failure if user not found or email already confirmed.
+    /// </summary>
+    Task<Result<string>> GenerateEmailConfirmationTokenAsync(string email, CancellationToken cancellationToken = default);
+
+    /// <summary>Changes the password for the authenticated user and refreshes sign-in.</summary>
+    Task<Result> ChangePasswordAsync(string userId, string currentPassword, string newPassword, CancellationToken cancellationToken = default);
+
+    /// <summary>Returns account management info for the given user.</summary>
+    Task<ManageInfoDto?> GetManageInfoAsync(string userId, CancellationToken cancellationToken = default);
+
+    /// <summary>Updates email and/or username for the given user.</summary>
+    Task<Result> UpdateManageInfoAsync(string userId, string? email, string? userName, CancellationToken cancellationToken = default);
+
+    /// <summary>Validates password, deletes the user account, and signs out.</summary>
+    Task<Result> DeletePersonalDataAsync(string userId, string password, CancellationToken cancellationToken = default);
 }

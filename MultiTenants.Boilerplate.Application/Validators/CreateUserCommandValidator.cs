@@ -1,5 +1,5 @@
 using FluentValidation;
-using MultiTenants.Boilerplate.Application.Commands;
+using MultiTenants.Boilerplate.Application.Commands.Register;
 using MultiTenants.Boilerplate.Shared.Constants;
 
 namespace MultiTenants.Boilerplate.Application.Validators;
