@@ -1,5 +1,5 @@
 using FluentValidation;
-using MultiTenants.Boilerplate.Application.Commands.Register;
+using MultiTenants.Boilerplate.Application.Commands.CreateUserAccount;
 using MultiTenants.Boilerplate.Shared.Constants;
 
 namespace MultiTenants.Boilerplate.Application.Validators;
@@ -7,7 +7,7 @@ namespace MultiTenants.Boilerplate.Application.Validators;
 /// <summary>
 /// Validator for CreateUserCommand
 /// </summary>
-public class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
+public class CreateUserCommandValidator : AbstractValidator<CreateUserAccountCommand>
 {
     public CreateUserCommandValidator()
     {

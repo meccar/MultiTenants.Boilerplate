@@ -1,25 +1,26 @@
 using MediatR;
 using MultiTenants.Boilerplate.Application.Abstractions;
+using MultiTenants.Boilerplate.Application.Commands.CreateUserAccount;
 using MultiTenants.Boilerplate.Shared.Utilities;
 
 namespace MultiTenants.Boilerplate.Application.Commands.Register;
 
-public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Result<string>>
+public class CreateUserAccountCommandHandler : IRequestHandler<CreateUserAccountCommand, Result<string>>
 {
     private readonly IIdentityService _identityService;
 
-    public CreateUserCommandHandler(
+    public CreateUserAccountCommandHandler(
         IIdentityService identityService)
     {
         _identityService = identityService;
     }
 
-    public async Task<Result<string>> Handle(CreateUserCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(CreateUserAccountCommand request, CancellationToken cancellationToken)
     {
         return await _identityService.CreateUserAsync(
             request.Email,
-            request.UserName,
             request.Password,
+            request.TenantName,
             cancellationToken);
     }
 }

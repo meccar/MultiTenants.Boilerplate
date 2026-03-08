@@ -12,7 +12,6 @@
     <ItemGroup>
       <PackageReference Include="FluentValidation" Version="12.1.1" />
       <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
-      <PackageReference Include="MediatR" Version="14.0.0" />
       <PackageReference Include="Marten" Version="8.0.0" />
       <PackageReference Include="MongoDB.Driver" Version="2.28.0" />
       <PackageReference Include="Finbuckle.MultiTenant.Abstractions" Version="10.0.2" />

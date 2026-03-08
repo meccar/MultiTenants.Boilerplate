@@ -2,8 +2,10 @@ using Carter;
 using MediatR;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MultiTenants.Boilerplate.Application.Commands.ChangePassword;
 using MultiTenants.Boilerplate.Application.Commands.ConfirmEmail;
+using MultiTenants.Boilerplate.Application.Commands.CreateUserAccount;
 using MultiTenants.Boilerplate.Application.Commands.ForgotPassword;
 using MultiTenants.Boilerplate.Application.Commands.Login;
 using MultiTenants.Boilerplate.Application.Commands.Logout;
@@ -17,13 +19,12 @@ using MultiTenants.Boilerplate.Application.Queries.ManageAccount;
 using MultiTenants.Boilerplate.Configurations;
 using MultiTenants.Boilerplate.Shared.Constants;
 using MultiTenants.Boilerplate.Shared.Responses;
-using Microsoft.Extensions.Options;
 using System.Net;
 using System.Security.Claims;
 
 namespace MultiTenants.Boilerplate.Endpoints;
 
-public class AuthEndpoints : ICarterModule
+public class AuthenticationController : ICarterModule
 {
     [Obsolete("Obsolete")]
     public void AddRoutes(IEndpointRouteBuilder app)
@@ -35,7 +36,7 @@ public class AuthEndpoints : ICarterModule
 
         // ---------- Registration ----------
         group.MapPost("/register", async (
-                [FromBody] CreateUserCommand command,
+                [FromBody] CreateUserAccountCommand command,
                 [FromServices] ISender sender) =>
             {
                 var result = await sender.Send(command);
