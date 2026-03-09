@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using MultiTenants.Boilerplate.Infrastructure.Identity;
 
-namespace MultiTenants.Boilerplate.Infrastructure.Data;
+namespace MultiTenants.Boilerplate.Infrastructure.Persistance.Data;
 
 /// <summary>
 /// Seeds default tenant (TAF), Admin role, and admin user using Finbuckle tenant store

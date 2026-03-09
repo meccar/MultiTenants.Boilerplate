@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using MultiTenants.Boilerplate.Application.Abstractions;
 using MultiTenants.Boilerplate.Infrastructure.Identity;
 
-namespace MultiTenants.Boilerplate.Infrastructure.Data;
+namespace MultiTenants.Boilerplate.Infrastructure.Persistance.Data;
 
 /// <summary>
 /// EF Core Identity database context with tenant-aware global query filters.

@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using MultiTenants.Boilerplate.Shared.Utilities;
 
-namespace MultiTenants.Boilerplate.Infrastructure.Data;
+namespace MultiTenants.Boilerplate.Infrastructure.Persistance.Data;
 
 /// <summary>
 /// Used by EF Core tools (e.g. dotnet ef migrations) to create AppDbContext at design time.

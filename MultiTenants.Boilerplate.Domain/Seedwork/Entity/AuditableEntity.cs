@@ -2,7 +2,7 @@
 
 namespace MultiTenants.Boilerplate.Domain.Seedwork.Entity;
 
-internal class AuditableEntity : IEntityBase, IAuditableEntity
+public abstract class AuditableEntity : IEntityBase, IAuditableEntity
 {
     public Guid Id { get; set; }
     public DateTime CreatedAt { get; set; }

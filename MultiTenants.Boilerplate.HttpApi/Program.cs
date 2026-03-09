@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using MultiTenants.Boilerplate.Application.Configuration;
 using MultiTenants.Boilerplate.Domain.Configuration;
 using MultiTenants.Boilerplate.Infrastructure.Configuration;
-using MultiTenants.Boilerplate.Infrastructure.Data;
 using MultiTenants.Boilerplate.Shared.Configuration;
 using MultiTenants.Boilerplate.Configurations;
 using MultiTenants.Boilerplate.Middlewares;
 using MultiTenants.Boilerplate.Shared.Constants;
+using MultiTenants.Boilerplate.Infrastructure.Persistance.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 

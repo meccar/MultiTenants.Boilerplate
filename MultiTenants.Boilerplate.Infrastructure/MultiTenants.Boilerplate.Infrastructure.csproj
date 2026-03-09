@@ -26,4 +26,8 @@
         <ProjectReference Include="..\MultiTenants.Boilerplate.Shared\MultiTenants.Boilerplate.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Persistance\Repositories\" />
+    </ItemGroup>
+
 </Project>
