@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MultiTenants.Boilerplate.Application.Abstractions;
-using MultiTenants.Boilerplate.Infrastructure.Identity;
 using MultiTenants.Boilerplate.Infrastructure.Services;
 using MultiTenants.Boilerplate.Infrastructure.Helpers;
 using MultiTenants.Boilerplate.Shared.Utilities;
 using MultiTenants.Boilerplate.Infrastructure.Persistance.Data;
+using MultiTenants.Boilerplate.Infrastructure.Persistance.Identity;
 
 namespace MultiTenants.Boilerplate.Infrastructure.Configuration;
 

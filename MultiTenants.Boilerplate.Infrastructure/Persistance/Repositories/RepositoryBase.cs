@@ -1,307 +1,215 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using MultiTenants.Boilerplate.Domain.Seedwork.Entity;
 using MultiTenants.Boilerplate.Domain.Seedwork.Interface;
-using System.Data.Common;
+using MultiTenants.Boilerplate.Infrastructure.Persistance.Data;
 using System.Linq.Expressions;
 
 namespace MultiTenants.Boilerplate.Infrastructure.Persistance.Repositories;
-public class RepositoryBase<T> 
-    : IRepositoryBase<T> where T : EntityBase, new()
-{
-    protected readonly IUnitOfWork _unitOfWork;
-    protected readonly string _tableName;
 
-    public RepositoryBase(IUnitOfWork unitOfWork)
+public abstract class RepositoryBase<T> : IRepositoryBase<T> where T : EntityBase
+{
+    protected readonly AppDbContext _context;
+    protected readonly IUnitOfWork _unitOfWork;
+    protected readonly DbSet<T> _dbSet;
+
+    protected RepositoryBase(AppDbContext context, IUnitOfWork unitOfWork)
     {
-        _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
-        _tableName = typeof(T).Name;
+        _context = context;
+        _unitOfWork = unitOfWork;
+        _dbSet = context.Set<T>();
     }
+
+    // ── Queryable ────────────────────────────────────────────────────────────
+
+    public IQueryable<T> FindAll(bool trackChanges = false)
+        => trackChanges ? _dbSet : _dbSet.AsNoTracking();
+
+    public IQueryable<T> FindAll(bool trackChanges = false,
+        params Expression<Func<T, object>>[] includeProperties)
+        => includeProperties.Aggregate(FindAll(trackChanges),
+            (query, prop) => query.Include(prop));
+
+    public IQueryable<T> FindByCondition(
+        Expression<Func<T, bool>> expression, bool trackChanges = false)
+        => FindAll(trackChanges).Where(expression);
+
+    public IQueryable<T> FindByCondition(
+        Expression<Func<T, bool>> expression, bool trackChanges = false,
+        params Expression<Func<T, object>>[] includeProperties)
+        => FindAll(trackChanges, includeProperties).Where(expression);
+
+    public async Task<IEnumerable<T>> FindAllAsync(bool trackChanges = false)
+        => await FindAll(trackChanges).ToListAsync();
+
+    public async Task<IEnumerable<T>> FindAllAsync(bool trackChanges = false,
+        params Expression<Func<T, object>>[] includeProperties)
+        => await FindAll(trackChanges, includeProperties).ToListAsync();
+
+    public async Task<IEnumerable<T>> FindByConditionAsync(
+        Expression<Func<T, bool>> expression, bool trackChanges = false)
+        => await FindByCondition(expression, trackChanges).ToListAsync();
+
+    public async Task<IEnumerable<T>> FindByConditionAsync(
+        Expression<Func<T, bool>> expression, bool trackChanges = false,
+        params Expression<Func<T, object>>[] includeProperties)
+        => await FindByCondition(expression, trackChanges, includeProperties).ToListAsync();
+
+    public async Task<T?> GetByIdAsync(Guid id)
+        => await _dbSet.FirstOrDefaultAsync(e => e.Id == id);
+
+    public async Task<T?> GetByIdAsync(string id)
+        => await GetByIdAsync(Guid.Parse(id));
+
+    public async Task<T?> GetByIdAsync(Guid id,
+        params Expression<Func<T, object>>[] includeProperties)
+        => await FindAll(false, includeProperties)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+    public async Task<T?> GetByIdAsync(string id,
+        params Expression<Func<T, object>>[] includeProperties)
+        => await GetByIdAsync(Guid.Parse(id), includeProperties);
+
+    public async Task<bool> ExistAsync(Guid id)
+        => await _dbSet.AnyAsync(e => e.Id == id);
+
+    public async Task<bool> ExistAsync(string id)
+        => await ExistAsync(Guid.Parse(id));
 
     public async Task<int> CountAsync()
-    {
-        var cmd = await CreateCommandAsync();
-        cmd.CommandText = $"SELECT COUNT(*) FROM {_tableName}";
+        => await _dbSet.CountAsync();
 
-        var result = await cmd.ExecuteScalarAsync();
-        return Convert.ToInt32(result);
-    }
+    public async Task<int> CountAsync(Expression<Func<T, bool>> expression)
+        => await _dbSet.CountAsync(expression);
 
     public async Task<EntityEntry<T>?> CreateAsync(T entity)
     {
-        var props = typeof(T).GetProperties()
-            .Where(p => p.Name != "Id");
-
-        var columns = string .Join(", ", props.Select(p => p.Name));
-        var parameters = string.Join(", ", props.Select(p => $"@{p.Name}"));
-
-        var cmd = await CreateCommandAsync();
-
-        cmd.CommandText = $"INSERT INTO {_tableName} ({columns}) VALUES ({parameters})";
-
-        foreach (var prop in props)
-        {
-            var param = cmd.CreateParameter();
-            param.ParameterName = $"@{prop.Name}";
-            param.Value = prop.GetValue(entity) ?? DBNull.Value;
-            cmd.Parameters.Add(param);
-        }
-
-        await cmd.ExecuteNonQueryAsync();
-        return null;
+        var entry = await _dbSet.AddAsync(entity);
+        await _context.SaveChangesAsync();
+        return entry;
     }
 
-    public async Task<IEnumerable<EntityEntry<T>>> CreateListAsync(
-        IEnumerable<T> entities)
+    public async Task<IEnumerable<EntityEntry<T>>> CreateListAsync(IEnumerable<T> entities)
     {
-        foreach (var e in entities)
-            await CreateAsync(e);
-
-        return Enumerable.Empty<EntityEntry<T>>();
+        var list = entities.ToList();
+        await _dbSet.AddRangeAsync(list);
+        await _context.SaveChangesAsync();
+        return list.Select(e => _context.Entry(e));
     }
-
-
-    public async Task DeleteAsync(Guid id)
-    {
-        var cmd = await CreateCommandAsync();
-
-        cmd.CommandText = $"DELETE FROM {_tableName} WHERE Id = @Id";
-
-        var param = cmd.CreateParameter();
-        param.ParameterName = "@Id";
-        param.Value = id;
-
-        cmd.Parameters.Add(param);
-        await cmd.ExecuteNonQueryAsync();
-    }
-
-    public async Task DeleteAsync(string id)
-        => await DeleteAsync(Guid.Parse(id));
-
-    public async Task DeleteAsync(T entity)
-        => await DeleteAsync(entity.Id);
-
-    public async Task DeleteListAsync(IEnumerable<Guid> ids)
-    {
-        foreach (var id in ids)
-            await DeleteAsync(id);
-    }
-    public async Task DeleteListAsync(IEnumerable<string> ids)
-        => await DeleteListAsync(ids.Select(Guid.Parse));
-
-    public async Task DeleteListAsync(IEnumerable<T> entities)
-        => await DeleteListAsync(entities.Select(e => e.Id));
-
-    public async Task<IEnumerable<T>> FindAllAsync(bool trackChanges = false)
-    {
-        var cmd = await CreateCommandAsync();
-        cmd.CommandText = $"SELECT * FROM {_tableName}";
-
-        var list = new List<T>();
-
-        using var reader = await cmd.ExecuteReaderAsync();
-
-        while (await reader.ReadAsync())
-            list.Add(MapEntity(reader));
-
-        return list;
-    }
-
-    public async Task<T?> GetByIdAsync(Guid id)
-    {
-        var cmd = await CreateCommandAsync();
-        cmd.CommandText = $"SELECT * FROM {_tableName} WHERE Id = @Id";
-
-        var param = cmd.CreateParameter();
-        param.ParameterName = "@Id";
-        param.Value = id;
-        cmd.Parameters.Add(param);
-
-        using var reader = await cmd.ExecuteReaderAsync();
-        if (!reader.Read())
-            return null;
-
-        return MapEntity(reader);
-    }
-    public Task<T?> GetByIdAsync(string id)
-        => GetByIdAsync(Guid.Parse(id));
-
-    public async Task<bool> ExistAsync(string id)
-    => await GetByIdAsync(id) != null;
-
-    public async Task<bool> ExistAsync(Guid id)
-        => await GetByIdAsync(id) != null;
 
     public async Task<EntityEntry<T>?> UpdateAsync(T entity)
     {
-        var props = typeof(T).GetProperties()
-            .Where(p => p.Name != "Id");
-
-        var setClause = string.Join(", ", props.Select(p => $"{p.Name} = @{p.Name}"));
-
-        var cmd = await CreateCommandAsync();
-
-        cmd.CommandText = $"UPDATE {_tableName} SET {setClause} WHERE Id = @Id";
-
-        foreach (var prop in props)
-        {
-            var param = cmd.CreateParameter();
-            param.ParameterName = $"@{prop.Name}";
-            param.Value = prop.GetValue(entity) ?? DBNull.Value;
-            cmd.Parameters.Add(param);
-        }
-
-        await cmd.ExecuteNonQueryAsync();
-        return null;
+        var entry = _dbSet.Update(entity);
+        await _context.SaveChangesAsync();
+        return entry;
     }
 
     public async Task UpdateListAsync(IEnumerable<T> entities)
     {
-        foreach (var e in entities)
-            await UpdateAsync(e);
+        _dbSet.UpdateRange(entities);
+        await _context.SaveChangesAsync();
     }
 
-    private async Task<DbCommand> CreateCommandAsync()
+    public async Task DeleteAsync(Guid id)
     {
-        if (_unitOfWork.Connection.State != System.Data.ConnectionState.Open)
-            await _unitOfWork.Connection.OpenAsync();
-
-        var cmd = _unitOfWork.Connection.CreateCommand();
-        cmd.Transaction = _unitOfWork.Transaction;
-        return cmd;
+        var entity = await GetByIdAsync(id)
+            ?? throw new KeyNotFoundException($"{typeof(T).Name} with id '{id}' not found.");
+        _dbSet.Remove(entity);
+        await _context.SaveChangesAsync();
     }
 
-    protected virtual T MapEntity(DbDataReader reader)
-    {
-        var entity = new T();
+    public async Task DeleteAsync(string id) => await DeleteAsync(Guid.Parse(id));
+    public async Task DeleteAsync(T entity) => await DeleteAsync(entity.Id);
 
-        foreach (var prop in typeof(T).GetProperties())
+    public async Task DeleteListAsync(IEnumerable<Guid> ids)
+    {
+        var entities = await FindByConditionAsync(e => ids.Contains(e.Id));
+        _dbSet.RemoveRange(entities);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteListAsync(IEnumerable<string> ids)
+        => await DeleteListAsync(ids.Select(Guid.Parse));
+
+    public async Task DeleteListAsync(IEnumerable<T> entities)
+    {
+        _dbSet.RemoveRange(entities);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task SoftDeleteAsync(T entity) => await SoftDeleteAsync(entity.Id);
+    public async Task SoftDeleteAsync(string id) => await SoftDeleteAsync(Guid.Parse(id));
+    public async Task SoftDeleteAsync(Guid id)
+    {
+        var entity = await GetByIdAsync(id)
+            ?? throw new KeyNotFoundException($"{typeof(T).Name} with id '{id}' not found.");
+        if (entity is ISoftDeletable soft)
         {
-            if (!HasColumn(reader, prop.Name))
-                continue;
-
-            var value = reader[prop.Name];
-            if (value == DBNull.Value)
-                continue;
-
-            prop.SetValue(entity, value);
+            soft.IsDeleted = true;
+            soft.DeletedAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
         }
-
-        return entity;
     }
 
-    private bool HasColumn(DbDataReader reader, string columnName)
+    public async Task SoftDeleteListAsync(IEnumerable<T> entities)
     {
-        for (int i = 0; i < reader.FieldCount; i++)
+        foreach (var e in entities) await SoftDeleteAsync(e.Id);
+    }
+    public async Task SoftDeleteListAsync(IEnumerable<string> ids)
+        => await SoftDeleteListAsync(ids.Select(Guid.Parse));
+    public async Task SoftDeleteListAsync(IEnumerable<Guid> ids)
+    {
+        foreach (var id in ids) await SoftDeleteAsync(id);
+    }
+
+    public async Task RestoreAsync(T entity) => await RestoreAsync(entity.Id);
+    public async Task RestoreAsync(string id) => await RestoreAsync(Guid.Parse(id));
+    public async Task RestoreAsync(Guid id)
+    {
+        var entity = await GetByIdAsync(id)
+            ?? throw new KeyNotFoundException($"{typeof(T).Name} with id '{id}' not found.");
+        if (entity is ISoftDeletable soft)
         {
-            if (reader.GetName(i)
-                .Equals(columnName, StringComparison.OrdinalIgnoreCase))
-                return true;
+            soft.IsDeleted = false;
+            soft.DeletedAt = null;
+            await _context.SaveChangesAsync();
         }
-        return false;
     }
 
-    public Task SoftDeleteAsync(T entity)
-    {
-        throw new NotImplementedException();
-    }
+    public async Task<IRepositoryBase<T>.PagedResult<T>> GetPagedAsync(
+        int pageNumber, int pageSize)
+        => await GetPagedAsync(pageNumber, pageSize, null, null, true, false);
 
-    public Task SoftDeleteAsync(string id)
+    public async Task<IRepositoryBase<T>.PagedResult<T>> GetPagedAsync(
+        int pageNumber, int pageSize,
+        Expression<Func<T, bool>>? expression = null,
+        Expression<Func<T, object>>? orderBy = null,
+        bool ascending = true,
+        bool trackChanges = false,
+        params Expression<Func<T, object>>[] includeProperties)
     {
-        throw new NotImplementedException();
-    }
+        var query = includeProperties.Length > 0
+            ? FindAll(trackChanges, includeProperties)
+            : FindAll(trackChanges);
 
-    public Task SoftDeleteAsync(Guid id)
-    {
-        throw new NotImplementedException();
-    }
+        if (expression != null)
+            query = query.Where(expression);
 
-    public Task SoftDeleteListAsync(IEnumerable<T> entities)
-    {
-        throw new NotImplementedException();
-    }
+        if (orderBy != null)
+            query = ascending ? query.OrderBy(orderBy) : query.OrderByDescending(orderBy);
 
-    public Task SoftDeleteListAsync(IEnumerable<string> ids)
-    {
-        throw new NotImplementedException();
-    }
+        var total = await query.CountAsync();
+        var items = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
 
-    public Task SoftDeleteListAsync(IEnumerable<Guid> ids)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task RestoreAsync(T entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task RestoreAsync(string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task RestoreAsync(Guid id)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IRepositoryBase<T>.PagedResult<T>> GetPagedAsync(int pageNumber, int pageSize)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IRepositoryBase<T>.PagedResult<T>> GetPagedAsync(int pageNumber, int pageSize, Expression<Func<T, bool>>? expression = null, Expression<Func<T, object>>? orderBy = null, bool ascending = true, bool trackChanges = false, params Expression<Func<T, object>>[] includeProperties)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IQueryable<T> FindAll(bool trackChanges = false)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IQueryable<T> FindAll(bool trackChanges = false, params Expression<Func<T, object>>[] includeProperties)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression, bool trackChanges = false)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression, bool trackChanges = false, params Expression<Func<T, object>>[] includeProperties)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<T>> FindAllAsync(bool trackChanges = false, params Expression<Func<T, object>>[] includeProperties)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<T>> FindByConditionAsync(Expression<Func<T, bool>> expression, bool trackChanges = false)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<IEnumerable<T>> FindByConditionAsync(Expression<Func<T, bool>> expression, bool trackChanges = false, params Expression<Func<T, object>>[] includeProperties)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<int> CountAsync(Expression<Func<T, bool>> expression)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<T?> GetByIdAsync(string id, params Expression<Func<T, object>>[] includeProperties)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task<T?> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includeProperties)
-    {
-        throw new NotImplementedException();
+        return new IRepositoryBase<T>.PagedResult<T>
+        {
+            Items = items,
+            TotalCount = total,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
 }

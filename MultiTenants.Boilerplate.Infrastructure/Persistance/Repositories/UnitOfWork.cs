@@ -1,20 +1,16 @@
 ﻿using MultiTenants.Boilerplate.Domain.Seedwork.Interface;
-using System.Data.Common;
+using MultiTenants.Boilerplate.Infrastructure.Persistance.Data;
 
 namespace MultiTenants.Boilerplate.Infrastructure.Persistance.Repositories;
 
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly DbConnection _connection;
-    private DbTransaction? _transaction;
+    private readonly AppDbContext _context;
     private bool _disposed;
 
-    public DbConnection Connection => _connection;
-    public DbTransaction? Transaction => _transaction;
-
-    public UnitOfWork(DbConnection connection)
+    public UnitOfWork(AppDbContext context)
     {
-        _connection = connection ?? throw new ArgumentNullException(nameof(connection));
+        _context = context ?? throw new ArgumentNullException(nameof(context));
     }
 
     public void Dispose()
@@ -26,24 +22,15 @@ public class UnitOfWork : IUnitOfWork
     public async Task BeginTransactionAsync(
         CancellationToken cancellationToken = default)
     {
-        if (_transaction != null)
-            throw new InvalidOperationException("A transaction is already in progress.");
-
-        if (_connection.State != System.Data.ConnectionState.Open)
-            await _connection.OpenAsync(cancellationToken);
-
-        _transaction = await _connection.BeginTransactionAsync(cancellationToken);
+        await _context.Database.BeginTransactionAsync(cancellationToken);
     }
 
     public async Task CommitTransactionAsync(
         CancellationToken cancellationToken = default)
     {
-        if (_transaction == null)
-            throw new InvalidOperationException("No active transaction to commit.");
-
         try
         {
-            await _transaction.CommitAsync(cancellationToken);
+            await _context.Database.CommitTransactionAsync(cancellationToken);
         }
         catch
         {
@@ -59,12 +46,9 @@ public class UnitOfWork : IUnitOfWork
     public async Task RollbackTransactionAsync(
         CancellationToken cancellationToken = default)
     {
-        if (_transaction == null)
-            return;
-
         try
         {
-            await _transaction.RollbackAsync(cancellationToken);
+            await _context.Database.RollbackTransactionAsync(cancellationToken);
         }
         finally
         {
@@ -74,19 +58,16 @@ public class UnitOfWork : IUnitOfWork
 
     private async Task DisposeTrancsactionAsync()
     {
-        if (_transaction != null)
-        {
-            await _transaction.DisposeAsync();
-            _transaction = null;
-        }
+        var currentTransaction = _context.Database.CurrentTransaction;
+        if (currentTransaction != null)
+            await currentTransaction.DisposeAsync();
     }
 
     protected virtual void Dispose(bool disposing)
     {
         if (_disposed) return;
-
-        _transaction?.Dispose();
-        _connection.Dispose();
+        if(disposing)
+            _context.Dispose();
         _disposed = true;
     }
 }

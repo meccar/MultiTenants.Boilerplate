@@ -1,4 +1,4 @@
-namespace MultiTenants.Boilerplate.Application.Abstractions;
+namespace MultiTenants.Boilerplate.Domain.Abstractions;
 
 /// <summary>
 /// Provides the current tenant (id, name, identifier) for the request context.

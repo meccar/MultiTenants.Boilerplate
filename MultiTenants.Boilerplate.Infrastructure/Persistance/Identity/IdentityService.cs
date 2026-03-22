@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Identity;
-using MultiTenants.Boilerplate.Application.Abstractions;
 using MultiTenants.Boilerplate.Application.DTOs;
-using MultiTenants.Boilerplate.Domain.Entities;
+using MultiTenants.Boilerplate.Domain.Abstractions;
 using MultiTenants.Boilerplate.Shared.Utilities;
 
-namespace MultiTenants.Boilerplate.Infrastructure.Identity;
+namespace MultiTenants.Boilerplate.Infrastructure.Persistance.Identity;
 
 /// <summary>
 /// Implements IIdentityService using UserManager, SignInManager, and RoleManager directly.
@@ -12,15 +11,15 @@ namespace MultiTenants.Boilerplate.Infrastructure.Identity;
 /// </summary>
 public sealed class IdentityService : IIdentityService
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly SignInManager<AppUser> _signInManager;
-    private readonly RoleManager<AppRole> _roleManager;
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private readonly ITenantProvider _tenantProvider;
 
     public IdentityService(
-        UserManager<AppUser> userManager,
-        SignInManager<AppUser> signInManager,
-        RoleManager<AppRole> roleManager,
+        UserManager<IdentityUser> userManager,
+        SignInManager<IdentityUser> signInManager,
+        RoleManager<IdentityRole> roleManager,
         ITenantProvider tenantProvider)
     {
         _userManager = userManager;
@@ -30,7 +29,11 @@ public sealed class IdentityService : IIdentityService
     }
 
     /// <inheritdoc />
-    public async Task<Result<string>> CreateUserAsync(string email, string userName, string? password, CancellationToken cancellationToken = default)
+    public async Task<Result<string>> CreateUserAsync(
+        string email, 
+        string userName, 
+        string? password, 
+        CancellationToken cancellationToken = default)
     {
         var tenantId = _tenantProvider.GetCurrentTenantId();
         if (string.IsNullOrEmpty(tenantId))
@@ -55,25 +58,25 @@ public sealed class IdentityService : IIdentityService
     }
 
     /// <inheritdoc />
-    public async Task<User?> GetUserByIdAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<IdentityUser?> GetUserByIdAsync(string userId, CancellationToken cancellationToken = default)
     {
         var appUser = await _userManager.FindByIdAsync(userId);
-        return appUser == null ? null : MapToDomainUser(appUser);
+        return appUser;
     }
 
     /// <inheritdoc />
-    public async Task<User?> GetUserByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
+    public async Task<IdentityUser?> GetUserByEmailAsync(string normalizedEmail, CancellationToken cancellationToken = default)
     {
         var appUser = await _userManager.FindByEmailAsync(normalizedEmail);
-        return appUser == null ? null : MapToDomainUser(appUser);
+        return appUser;
     }
 
     /// <inheritdoc />
-    public async Task<User?> GetUserByUserNameOrEmailAsync(string userNameOrEmail, CancellationToken cancellationToken = default)
+    public async Task<IdentityUser?> GetUserByUserNameOrEmailAsync(string userNameOrEmail, CancellationToken cancellationToken = default)
     {
         var appUser = await _userManager.FindByNameAsync(userNameOrEmail)
             ?? await _userManager.FindByEmailAsync(userNameOrEmail);
-        return appUser == null ? null : MapToDomainUser(appUser);
+        return appUser;
     }
 
     /// <inheritdoc />
@@ -84,7 +87,7 @@ public sealed class IdentityService : IIdentityService
         if (appUser == null)
             return false;
 
-        var result = await _signInManager.CheckPasswordSignInAsync(appUser, password, lockoutOnFailure: false);
+        var result = await _signInManager.CheckPasswordSignInAsync(appUser, password, true);
         return result.Succeeded;
     }
 
@@ -264,15 +267,4 @@ public sealed class IdentityService : IIdentityService
         await _signInManager.SignOutAsync();
         return Result.Success();
     }
-
-    private static User MapToDomainUser(AppUser appUser) => new()
-    {
-        Id = appUser.Id,
-        TenantId = appUser.TenantId,
-        Email = appUser.Email ?? string.Empty,
-        UserName = appUser.UserName ?? string.Empty,
-        FullName = null,
-        EmailConfirmed = appUser.EmailConfirmed,
-        CreatedAt = null
-    };
 }

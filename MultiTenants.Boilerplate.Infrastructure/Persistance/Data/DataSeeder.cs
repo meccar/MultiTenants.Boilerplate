@@ -2,7 +2,7 @@ using Finbuckle.MultiTenant.Abstractions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using MultiTenants.Boilerplate.Infrastructure.Identity;
+using MultiTenants.Boilerplate.Infrastructure.Persistance.Identity;
 
 namespace MultiTenants.Boilerplate.Infrastructure.Persistance.Data;
 

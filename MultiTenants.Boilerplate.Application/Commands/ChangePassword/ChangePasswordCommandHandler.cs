@@ -1,6 +1,5 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using MultiTenants.Boilerplate.Application.Abstractions;
 using MultiTenants.Boilerplate.Shared.Utilities;
 
 namespace MultiTenants.Boilerplate.Application.Commands.ChangePassword;

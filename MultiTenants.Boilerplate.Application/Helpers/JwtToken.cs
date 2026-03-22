@@ -1,4 +1,4 @@
-using Finbuckle.MultiTenant.Abstractions;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -51,7 +51,7 @@ public class JwtToken
     }
 
     public Task<string> GenerateJwtTokenAsync(
-        Domain.Entities.User user,
+        IdentityUser user,
         IList<string> roles,
         string tenantId
     )

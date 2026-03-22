@@ -2,7 +2,7 @@ using MultiTenants.Boilerplate.Application.DTOs;
 using MultiTenants.Boilerplate.Domain.Entities;
 using MultiTenants.Boilerplate.Shared.Utilities;
 
-namespace MultiTenants.Boilerplate.Application.Abstractions;
+namespace MultiTenants.Boilerplate.Domain.Abstractions;
 
 /// <summary>
 /// Application-facing identity operations that require tenant context or mapping to domain types.

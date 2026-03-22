@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using MultiTenants.Boilerplate.Infrastructure.Identity;
+using MultiTenants.Boilerplate.Infrastructure.Persistance.Identity;
 
 namespace MultiTenants.Boilerplate.Infrastructure.Services;
 
