@@ -33,6 +33,7 @@ This project follows a clean layered architecture with **layer-by-layer dependen
 ## Features
 
 ### Core Features
+
 - ✅ **Multi-Tenancy**: Full multi-tenant support using Finbuckle.MultiTenant
 - ✅ **Database**: MongoDB for primary data storage
 - ✅ **Document Store**: Marten for event sourcing/document store
@@ -44,6 +45,7 @@ This project follows a clean layered architecture with **layer-by-layer dependen
 - ✅ **DDD**: Domain-Driven Design principles
 
 ### Quality & Reliability
+
 - ✅ **Validation**: FluentValidation with automatic pipeline validation
 - ✅ **Health Checks**: MongoDB and PostgreSQL health check endpoints (DI-driven)
 - ✅ **Rate Limiting**: Configurable rate limiting with sliding window
@@ -52,24 +54,25 @@ This project follows a clean layered architecture with **layer-by-layer dependen
 - ✅ **Response Wrapper**: Standardized API response format
 
 ### Optional Features (DI-Driven)
+
 - ✅ **Message Broker**: RabbitMQ or Kafka support (configured via appsettings)
 - ✅ **Caching**: Redis (distributed) or In-Memory caching (configured via appsettings)
 
 ## Project Structure
 
 ```
-MultiTenants.Boilerplate/
-├── MultiTenants.Boilerplate.Shared/           # Shared constants and utilities
+BuildingBlocks/
+├── BuildingBlocks.Shared/           # Shared constants and utilities
 │   ├── Constants/                            # API, Auth, Validation constants
 │   ├── Responses/                            # API response models
 │   ├── Utilities/                             # Helpers, extensions
 │   └── Configuration/                       # SharedConfiguration.cs (DI entry)
 │
-├── MultiTenants.Boilerplate.Domain/          # Domain entities, value objects
+├── BuildingBlocks.Domain/          # Domain entities, value objects
 │   ├── Entities/                             # Domain entities
 │   └── Configuration/                        # DomainConfiguration.cs (DI entry)
 │
-├── MultiTenants.Boilerplate.Application/      # CQRS commands, queries, handlers
+├── BuildingBlocks.Application/      # CQRS commands, queries, handlers
 │   ├── Commands/                             # Command handlers
 │   ├── Queries/                              # Query handlers
 │   ├── Validators/                           # FluentValidation validators
@@ -86,7 +89,7 @@ MultiTenants.Boilerplate/
 │   │   └── CachingConfiguration.cs           # Redis/In-Memory
 │   └── Stores/                               # MongoDB stores
 │
-└── MultiTenants.Boilerplate.HttpApi/        # Carter endpoints, API configuration
+└── BuildingBlocks.HttpApi/        # Carter endpoints, API configuration
     ├── Endpoints/                            # Carter endpoint modules
     ├── Middlewares/                          # Custom middlewares
     └── Configurations/                       # HttpApi service configurations
@@ -160,10 +163,7 @@ builder.Services.AddHttpApi(builder.Configuration);     // 4. HttpApi Layer
     }
   },
   "Cors": {
-    "AllowedOrigins": [
-      "http://localhost:3000",
-      "http://localhost:5173"
-    ]
+    "AllowedOrigins": ["http://localhost:3000", "http://localhost:5173"]
   },
   "RateLimiting": {
     "PermitLimit": 100,
@@ -193,6 +193,7 @@ docker-compose up -d
 ```
 
 This will start:
+
 - **MongoDB** on port 27017
 - **PostgreSQL** on port 5432
 - **RabbitMQ** on ports 5672 (AMQP) and 15672 (Management UI)
@@ -203,7 +204,7 @@ This will start:
 ### Running Locally
 
 ```bash
-cd MultiTenants.Boilerplate.HttpApi
+cd BuildingBlocks.HttpApi
 dotnet run
 ```
 
@@ -212,16 +213,19 @@ Access Swagger UI at: `https://localhost:5001/swagger`
 ## API Endpoints
 
 ### Authentication
+
 - `GET /api/auth/login/google` - Initiate Google OAuth
 - `GET /api/auth/login/google/callback` - OAuth callback
 - `POST /api/auth/logout` - Logout
 - `GET /api/auth/me` - Get current user
 
 ### Users
+
 - `POST /api/users` - Create user
 - `GET /api/users/{id}` - Get user by ID
 
 ### Health Checks
+
 - `GET /health` - Basic health check
 - `GET /health/ready` - Readiness check (includes database connections)
 - `GET /health/live` - Liveness check
@@ -239,17 +243,20 @@ Example: `/tenant1/api/users`
 ## Technologies Used
 
 ### Core Framework
+
 - **.NET 10.0**: Latest .NET framework
 - **Carter**: Minimal API framework (no controllers)
 - **MediatR**: CQRS implementation
 - **FluentValidation**: Request validation
 
 ### Database & Storage
+
 - **MongoDB**: NoSQL database for primary storage
 - **Marten**: Document database and event store (PostgreSQL)
 - **ASP.NET Identity**: Authentication and authorization with **EF Core** (SQL Server by default; PostgreSQL/MySQL via config). See [docs/BREAKING_CHANGES.md](docs/BREAKING_CHANGES.md) for the migration from MongoDB Identity.
 
 ### Infrastructure
+
 - **Finbuckle.MultiTenant**: Multi-tenancy support
 - **RabbitMQ.Client**: RabbitMQ message broker (optional)
 - **Confluent.Kafka**: Kafka message broker (optional)
@@ -257,6 +264,7 @@ Example: `/tenant1/api/users`
 - **Microsoft.Extensions.Caching**: In-memory caching (default)
 
 ### API & Documentation
+
 - **Swagger/OpenAPI**: API documentation
 - **Google OAuth**: Authentication provider
 
@@ -279,4 +287,3 @@ Example: `/tenant1/api/users`
 ## License
 
 This is a boilerplate project for building multi-tenant applications.
-

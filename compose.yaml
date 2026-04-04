@@ -72,7 +72,7 @@
   api:
     build:
       context: .
-      dockerfile: MultiTenants.Boilerplate.HttpApi/Dockerfile
+      dockerfile: BuildingBlocks.HttpApi/Dockerfile
     container_name: multitenants-api
     ports:
       - "5000:8080"
