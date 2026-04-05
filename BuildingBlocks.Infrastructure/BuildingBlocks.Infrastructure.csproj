@@ -23,7 +23,7 @@
     <ItemGroup>
         <ProjectReference Include="..\BuildingBlocks.Application\BuildingBlocks.Application.csproj" />
         <ProjectReference Include="..\BuildingBlocks.Domain\BuildingBlocks.Domain.csproj" />
-        <ProjectReference Include="..\BuildingBlocks.Shared\BuildingBlocks.Shared.csproj" />
+        <ProjectReference Include="..\BuildingBlocks.Shared\Shared.csproj" />
     </ItemGroup>
 
 </Project>

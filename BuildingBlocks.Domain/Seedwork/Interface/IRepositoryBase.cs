@@ -1,9 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using BuildingBlocks.Domain.Seedwork.Entity;
+﻿using BuildingBlocks.Domain.Seedwork.Aggregate;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
 
 namespace BuildingBlocks.Domain.Seedwork.Interface;
-public interface IRepositoryBase<T> where T : EntityBase
+public interface IRepositoryBase<T> where T : AggregateRoot
 {
     public class PagedResult<TItem>
     {
@@ -11,8 +11,6 @@ public interface IRepositoryBase<T> where T : EntityBase
         public int TotalCount { get; set; }
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
-
-        // bonus computed helpers
         public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
         public bool HasPreviousPage => PageNumber > 1;
         public bool HasNextPage => PageNumber < TotalPages;
