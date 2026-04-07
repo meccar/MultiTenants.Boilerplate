@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace Identity.Domain
+namespace Identity.Application
 {
     public static class AssemblyReference
     {
