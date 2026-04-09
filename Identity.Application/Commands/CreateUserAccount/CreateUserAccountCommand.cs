@@ -1,10 +1,10 @@
-using BuildingBlocks.Domain.Seedwork.Command;
+using BuildingBlocks.Core.Seedwork.Command;
 using BuildingBlocks.Shared.Dtos.UserAccount;
-using BuildingBlocks.Shared.Utilities;
+using Microsoft.AspNetCore.Identity;
 
 namespace BuildingBlocks.Application.Commands.CreateUserAccount;
 
-public class CreateUserAccountCommand : ICommand<Result<string>>
+public class CreateUserAccountCommand : ICommand<IdentityResult>
 {
     public CreateUserAccountCommand(
         CreateUserAccountDto userAccountDto

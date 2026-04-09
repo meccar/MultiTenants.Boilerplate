@@ -1,26 +1,35 @@
-using MediatR;
-using BuildingBlocks.Domain.Abstractions;
 using BuildingBlocks.Application.Commands.CreateUserAccount;
-using BuildingBlocks.Shared.Utilities;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
 
 namespace BuildingBlocks.Application.Commands.Register;
 
-public class CreateUserAccountCommandHandler : IRequestHandler<CreateUserAccountCommand, Result<string>>
+public class CreateUserAccountCommandHandler 
+    : IRequestHandler<CreateUserAccountCommand, IdentityResult>
 {
-    private readonly IIdentityService _identityService;
+    private readonly UserManager<IdentityUser> _userManager;
 
     public CreateUserAccountCommandHandler(
-        IIdentityService identityService)
-    {
-        _identityService = identityService;
+        UserManager<IdentityUser> userManager
+    ){
+        _userManager = userManager;
     }
 
-    public async Task<Result<string>> Handle(CreateUserAccountCommand request, CancellationToken cancellationToken)
+    public async Task<IdentityResult> Handle(
+        CreateUserAccountCommand request, CancellationToken cancellationToken)
     {
-        return await _identityService.CreateUserAsync(
-            request.Email,
-            request.Password,
-            request.TenantName,
-            cancellationToken);
+        //var tenantId = _tenantProvider.GetCurrentTenantId();
+        //if (string.IsNullOrEmpty(tenantId))
+        //    return Result<string>.Failure("Tenant context not found");
+
+        var user = new IdentityUser
+        {
+            UserName = request.Email,
+            Email = request.Email,
+        };
+
+        return string.IsNullOrEmpty(request.Password)
+            ? await _userManager.CreateAsync(user)
+            : await _userManager.CreateAsync(user, request.Password);
     }
 }

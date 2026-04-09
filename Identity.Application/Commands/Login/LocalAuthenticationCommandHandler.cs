@@ -1,10 +1,10 @@
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Application.Helpers;
-using BuildingBlocks.Domain.Abstractions;
 using BuildingBlocks.Shared.Constants.Errors;
 using BuildingBlocks.Shared.Utilities;
+using BuildingBlocks.Core.Abstractions;
+using BuildingBlocks.Shared.Helpers;
 
 namespace BuildingBlocks.Application.Commands.Login;
 
@@ -34,7 +34,8 @@ public class LocalAuthenticationCommandHandler
         _jwtToken = jwtToken;
     }
 
-    public async Task<Result<string>> Handle(LocalAuthenticationCommand request, CancellationToken cancellationToken)
+    public async Task<Result<string>> Handle(
+        LocalAuthenticationCommand request, CancellationToken cancellationToken)
     {
         var tenant = await _tenantRepository.GetByIdAsync(Guid.Parse(request.TenantId));
         if (tenant is null)
@@ -43,13 +44,9 @@ public class LocalAuthenticationCommandHandler
         var user = await _userManager.FindByNameAsync(request.UserName)
             ?? await _userManager.FindByEmailAsync(request.UserName);
         if (user is null)
-        {
-            //_logger.LogWarning("Login failed: User {UserName} not found in tenant {TenantId}",
-            //    StringHelper.MaskInput(request.UserName), tenantId);
             return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
-        }
 
-        var checkPasswordSignIn = await _signInManager.CheckPasswordSignInAsync(user, request.Password, true);
+        var checkPasswordSignIn = await _signInManager.PasswordSignInAsync(user, request.Password, true, true);
         if (!checkPasswordSignIn.Succeeded)
             return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
 
@@ -57,7 +54,8 @@ public class LocalAuthenticationCommandHandler
         if (roles.Count == 0)
             return Result<string>.Failure("User has no assigned roles");
 
-        var token = await _jwtToken.GenerateJwtTokenAsync(user, roles.ToList(), request.TenantId);
+        var token = await _jwtToken.GenerateJwtTokenAsync(
+            user.Id, user.Email, roles.ToList(), request.TenantId);
         if (string.IsNullOrEmpty(token))
         {
             _logger.LogError("Token generation failed for user {UserId} in tenant {TenantId}",

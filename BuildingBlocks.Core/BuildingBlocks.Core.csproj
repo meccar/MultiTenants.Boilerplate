@@ -7,11 +7,17 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="MediatR" Version="14.1.0" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
+      <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.5" />
       <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.17.0" />
       <PackageReference Include="NUlid" Version="1.7.3" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\BuildingBlocks.Shared\BuildingBlocks.Shared.csproj" />
     </ItemGroup>
 
 </Project>
