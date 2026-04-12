@@ -13,7 +13,10 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Identity.Domain\Identity.Domain.csproj" />
+		
 		<ProjectReference Include="..\BuildingBlocks.Core\BuildingBlocks.Core.csproj" />
 		<ProjectReference Include="..\BuildingBlocks.Shared\BuildingBlocks.Shared.csproj" />
+		
+		<ProjectReference Include="..\Tenancy.Domain\Tenancy.Domain.csproj" />
 	</ItemGroup>
 </Project>

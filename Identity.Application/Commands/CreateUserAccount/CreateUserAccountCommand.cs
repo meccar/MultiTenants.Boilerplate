@@ -12,20 +12,14 @@ public class CreateUserAccountCommand : ICommand<IdentityResult>
     (
         Email,
         UserName,
-        Password,
-        TenantName
+        Password
     ) = (
         userAccountDto.Email,
         userAccountDto.UserName,
-        userAccountDto.Password,
-        userAccountDto.TenantName
+        userAccountDto.Password
     );
 
     public string Email { get; set; } = null!;
     public string UserName { get; set; }
     public string Password { get; set; } = null!;
-    public string TenantName { get; set; } = null!;
 }
-
-
-

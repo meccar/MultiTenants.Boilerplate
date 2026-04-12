@@ -1,6 +1,8 @@
 using BuildingBlocks.Application.Commands.CreateUserAccount;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Tenancy.Domain.Interfaces;
+using Tenancy.Domain.Models;
 
 namespace BuildingBlocks.Application.Commands.Register;
 
@@ -8,19 +10,22 @@ public class CreateUserAccountCommandHandler
     : IRequestHandler<CreateUserAccountCommand, IdentityResult>
 {
     private readonly UserManager<IdentityUser> _userManager;
+    private readonly ITenant _tenant;
 
     public CreateUserAccountCommandHandler(
-        UserManager<IdentityUser> userManager
-    ){
+        UserManager<IdentityUser> userManager,
+        ITenant tenant
+    )
+    {
         _userManager = userManager;
+        _tenant = tenant;
     }
 
     public async Task<IdentityResult> Handle(
         CreateUserAccountCommand request, CancellationToken cancellationToken)
     {
-        //var tenantId = _tenantProvider.GetCurrentTenantId();
-        //if (string.IsNullOrEmpty(tenantId))
-        //    return Result<string>.Failure("Tenant context not found");
+        if (string.IsNullOrEmpty(_tenant.TenantName))
+            throw new InvalidOperationException("Tenant context not available");
 
         var user = new IdentityUser
         {
