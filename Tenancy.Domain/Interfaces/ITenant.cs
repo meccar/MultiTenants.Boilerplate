@@ -2,7 +2,7 @@
 {
     public interface ITenant
     {
-        string? TenantName { get; }
+        string? TenantId { get; }
         bool IsMultiTenant { get; }
     }
 }

@@ -1,18 +1,23 @@
-using MediatR;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using BuildingBlocks.Domain.Abstractions;
 using BuildingBlocks.Application.Helpers;
 using BuildingBlocks.Shared.Constants.Errors;
+using BuildingBlocks.Shared.Dtos;
+using BuildingBlocks.Shared.Helpers;
 using BuildingBlocks.Shared.Utilities;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Tenancy.Domain.Interfaces;
 
 namespace BuildingBlocks.Application.Commands.Login;
 
 public class OAuthAuthenticationCommandHandler
     : IRequestHandler<OAuthAuthenticationCommand, Result<string>>
 {
-    private readonly IIdentityService _identityService;
-    private readonly ITenantProvider _tenantProvider;
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly ITenant _tenant;
     private readonly IConfiguration _configuration;
     private readonly ILogger<OAuthAuthenticationCommandHandler> _logger;
     private readonly JwtToken _jwtToken;
@@ -20,14 +25,18 @@ public class OAuthAuthenticationCommandHandler
     private const string DefaultOAuthRole = "User";
 
     public OAuthAuthenticationCommandHandler(
-        IIdentityService identityService,
-        ITenantProvider tenantProvider,
+        UserManager<IdentityUser> userManager,
+        RoleManager<IdentityRole> roleManager,
+        SignInManager<IdentityUser> signInManager,
+        ITenant tenant,
         IConfiguration configuration,
         ILogger<OAuthAuthenticationCommandHandler> logger,
-        JwtToken jwtToken)
-    {
-        _identityService = identityService;
-        _tenantProvider = tenantProvider;
+        JwtToken jwtToken
+    ){
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _signInManager = signInManager;
+        _tenant = tenant;
         _configuration = configuration;
         _logger = logger;
         _jwtToken = jwtToken;
@@ -35,9 +44,8 @@ public class OAuthAuthenticationCommandHandler
 
     public async Task<Result<string>> Handle(OAuthAuthenticationCommand request, CancellationToken cancellationToken)
     {
-        var tenantId = _tenantProvider.GetCurrentTenantId();
-        if (string.IsNullOrEmpty(tenantId))
-            return Result<string>.Failure("Tenant context not found");
+        if (string.IsNullOrEmpty(_tenant.TenantId))
+            throw new InvalidOperationException("Tenant context not available");
 
         var email = request.Email;
         if (string.IsNullOrWhiteSpace(email))
@@ -46,41 +54,46 @@ public class OAuthAuthenticationCommandHandler
             return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
         }
 
-        var normalizedEmail = email.Trim().ToUpperInvariant();
-        var user = await _identityService.GetUserByEmailAsync(normalizedEmail, cancellationToken);
+        var user = await _userManager.FindByEmailAsync(email);
         if (user is null)
         {
             _logger.LogWarning("Login failed: User {UserName} not found in tenant {TenantId}",
-                StringHelper.MaskInput(email), tenantId);
+                StringHelper.MaskInput(email), _tenant.TenantId);
             return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
         }
 
-        var roles = await _identityService.GetUserRolesAsync(user.Id, cancellationToken);
+        var roles = await _userManager.GetRolesAsync(user);
         if (roles.Count == 0)
         {
             var defaultRole = _configuration["Authentication:OAuth:DefaultRole"] ?? DefaultOAuthRole;
-            var assignResult = await _identityService.AssignRoleAsync(user.Id, defaultRole, cancellationToken);
-            if (assignResult.IsSuccess)
-                roles = await _identityService.GetUserRolesAsync(user.Id, cancellationToken);
+            var assignResult = await _userManager.AddToRoleAsync(user, defaultRole);
+            if (!assignResult.Succeeded)
+            {
+                _logger.LogWarning("OAuth login failed: User {UserId} has no roles in tenant {TenantId}",
+                    user.Id, _tenant.TenantId);
+                return Result<string>.Failure("User has no assigned roles");
+            }
+            roles = new List<string> { defaultRole };
         }
 
-        if (roles.Count == 0)
+        var userDto = new UserDto
         {
-            _logger.LogWarning("OAuth login failed: User {UserId} has no roles in tenant {TenantId}",
-                user.Id, tenantId);
-            return Result<string>.Failure("User has no assigned roles");
-        }
-
-        var token = await _jwtToken.GenerateJwtTokenAsync(user, roles.ToList(), tenantId);
+            Id = user.Id,
+            Email = user.Email,
+            UserName = user.UserName,
+            EmailConfirmed = user.EmailConfirmed,
+        };
+        var token = await _jwtToken.GenerateJwtTokenAsync(
+            userDto, roles, _tenant.TenantId);
         if (string.IsNullOrEmpty(token))
         {
             _logger.LogError("Token generation failed for user {UserId} in tenant {TenantId}",
-                user.Id, tenantId);
+                user.Id, _tenant.TenantId);
             return Result<string>.Failure("Token generation failed");
         }
 
         _logger.LogInformation("User {UserId} successfully authenticated via {Provider} in tenant {TenantId}",
-            user.Id, request.Provider, tenantId);
+            user.Id, request.Provider, _tenant.TenantId);
 
         return Result<string>.Success(token);
     }

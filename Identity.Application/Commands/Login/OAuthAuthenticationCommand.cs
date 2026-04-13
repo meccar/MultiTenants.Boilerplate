@@ -11,6 +11,5 @@ public record OAuthAuthenticationCommand(
     string Provider,
     string ProviderKey,
     string? Email,
-    string? DisplayName,
-    string TenantId
+    string? DisplayName
 ) : IRequest<Result<string>>;

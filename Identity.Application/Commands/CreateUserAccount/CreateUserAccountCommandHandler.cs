@@ -24,7 +24,7 @@ public class CreateUserAccountCommandHandler
     public async Task<IdentityResult> Handle(
         CreateUserAccountCommand request, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_tenant.TenantName))
+        if (string.IsNullOrEmpty(_tenant.TenantId))
             throw new InvalidOperationException("Tenant context not available");
 
         var user = new IdentityUser

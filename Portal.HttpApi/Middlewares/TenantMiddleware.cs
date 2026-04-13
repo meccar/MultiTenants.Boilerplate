@@ -23,9 +23,9 @@ namespace BuildingBlocks.Middlewares
             if (context.Request.Headers.TryGetValue(
                 tenantHeaderName, out var tenantValues))
             {
-                var tenantName = tenantValues.FirstOrDefault();
+                var tenantId = tenantValues.FirstOrDefault();
 
-                if (string.IsNullOrWhiteSpace(tenantName))
+                if (string.IsNullOrWhiteSpace(tenantId))
                 {
                     _logger.LogWarning("Tenant header '{TenantHeader}' is empty", tenantHeaderName);
                     context.Response.StatusCode = StatusCodes.Status400BadRequest;
@@ -43,10 +43,10 @@ namespace BuildingBlocks.Middlewares
                 //     return;
                 // }
 
-                ((TenantContext)tenantContext).TenantName = tenantName;
+                ((TenantContext)tenantContext).TenantId = tenantId;
                 ((TenantContext)tenantContext).IsMultiTenant = true;
 
-                _logger.LogInformation("Tenant '{TenantName}' resolved from header", tenantName);
+                _logger.LogInformation("Tenant '{TenantName}' resolved from header", tenantId);
             }
             else
             {
