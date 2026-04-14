@@ -1,8 +1,11 @@
-using MediatR;
+using BuildingBlocks.Shared.Constants;
 using BuildingBlocks.Shared.Utilities;
+using Identity.Application.Decorators;
+using MediatR;
 
-namespace BuildingBlocks.Application.Commands.ChangePassword;
+namespace Identity.Application.Commands.ChangePassword;
 
+[RequirePermission(Permissions.Users.ChangePassword)]
 public record ChangePasswordCommand(
     string UserId,
     string CurrentPassword,

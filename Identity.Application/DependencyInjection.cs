@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Identity.Application.Behaviors;
+using MediatR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Identity.Application
@@ -10,6 +12,10 @@ namespace Identity.Application
             IConfiguration configuration
         )
         {
+            services.AddScoped(
+                typeof(IPipelineBehavior<,>), 
+                typeof(PermissionValidationBehavior<,>));
+
             return services;
         }
     }

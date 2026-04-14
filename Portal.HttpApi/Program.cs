@@ -1,10 +1,13 @@
-using Carter;
-using Finbuckle.MultiTenant.AspNetCore.Extensions;
-using Microsoft.EntityFrameworkCore;
-using BuildingBlocks.Shared.Configuration;
 using BuildingBlocks.Configurations;
 using BuildingBlocks.Middlewares;
-using BuildingBlocks.Application.Configuration;
+using BuildingBlocks.Shared.Configuration;
+using Carter;
+using Finbuckle.MultiTenant.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,16 +18,40 @@ var builder = WebApplication.CreateBuilder(args);
 // HttpApi (outer layer) orchestrates all layers
 
 // 1. Shared Layer (foundation - no dependencies)
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"])),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
+
 builder.Services.AddShared();
 
 // 2. Domain Layer (depends on Shared)
-builder.Services.AddDomain();
+//builder.Services.AddDomain();
 
 // 3. Application Layer (depends on Domain and Shared)
-builder.Services.AddApplication(builder.Configuration);
+//builder.Services.AddApplication(builder.Configuration);
 
 // 4. Infrastructure Layer (Identity, EF Core, IIdentityService)
-builder.Services.AddInfrastructure(builder.Configuration);
+//builder.Services.AddInfrastructure(builder.Configuration);
 
 // 5. HttpApi Layer (depends on all layers)
 builder.Services.AddHttpApi(builder.Configuration);
@@ -32,53 +59,53 @@ builder.Services.AddHttpApi(builder.Configuration);
 var app = builder.Build();
 
 // Ensure database exists and apply pending migrations (creates/updates MultiTenantsIdentity)
-using (var scope = app.Services.CreateScope())
-{
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    try
-    {
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        await db.Database.MigrateAsync();
-        logger.LogInformation("Database migrations applied.");
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Database migration failed. Ensure SQL Server/LocalDB is running and the connection string is correct.");
-        throw;
-    }
-}
+//using (var scope = app.Services.CreateScope())
+//{
+//    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+//    try
+//    {
+//        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+//        await db.Database.MigrateAsync();
+//        logger.LogInformation("Database migrations applied.");
+//    }
+//    catch (Exception ex)
+//    {
+//        logger.LogError(ex, "Database migration failed. Ensure SQL Server/LocalDB is running and the connection string is correct.");
+//        throw;
+//    }
+//}
 
 // Seed default tenant (TAF), Admin role, and admin user (idempotent).
 // Set tenant context *before* resolving DataSeeder so DbContext is created with correct CurrentTenantId.
-using (var scope = app.Services.CreateScope())
-{
-    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    try
-    {
-        var tenantStore = scope.ServiceProvider.GetRequiredService<Finbuckle.MultiTenant.Abstractions.IMultiTenantStore<Finbuckle.MultiTenant.Abstractions.TenantInfo>>();
-        var tenantSetter = scope.ServiceProvider.GetRequiredService<Finbuckle.MultiTenant.Abstractions.IMultiTenantContextSetter>();
-        var tenant = await tenantStore.GetByIdentifierAsync("taf");
-        if (tenant == null)
-        {
-            tenant = new Finbuckle.MultiTenant.Abstractions.TenantInfo
-            {
-                Id = Guid.NewGuid().ToString(),
-                Identifier = "taf",
-                Name = "TAF"
-            };
-            await tenantStore.AddAsync(tenant);
-        }
-        tenantSetter.MultiTenantContext = new Finbuckle.MultiTenant.Abstractions.MultiTenantContext<Finbuckle.MultiTenant.Abstractions.TenantInfo>(tenant);
+//using (var scope = app.Services.CreateScope())
+//{
+//    var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+//    try
+//    {
+//        var tenantStore = scope.ServiceProvider.GetRequiredService<Finbuckle.MultiTenant.Abstractions.IMultiTenantStore<Finbuckle.MultiTenant.Abstractions.TenantInfo>>();
+//        var tenantSetter = scope.ServiceProvider.GetRequiredService<Finbuckle.MultiTenant.Abstractions.IMultiTenantContextSetter>();
+//        var tenant = await tenantStore.GetByIdentifierAsync("taf");
+//        if (tenant == null)
+//        {
+//            tenant = new Finbuckle.MultiTenant.Abstractions.TenantInfo
+//            {
+//                Id = Guid.NewGuid().ToString(),
+//                Identifier = "taf",
+//                Name = "TAF"
+//            };
+//            await tenantStore.AddAsync(tenant);
+//        }
+//        tenantSetter.MultiTenantContext = new Finbuckle.MultiTenant.Abstractions.MultiTenantContext<Finbuckle.MultiTenant.Abstractions.TenantInfo>(tenant);
 
-        var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
-        await seeder.SeedAsync();
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Data seeding failed.");
-        throw;
-    }
-}
+//        var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+//        await seeder.SeedAsync();
+//    }
+//    catch (Exception ex)
+//    {
+//        logger.LogError(ex, "Data seeding failed.");
+//        throw;
+//    }
+//}
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())

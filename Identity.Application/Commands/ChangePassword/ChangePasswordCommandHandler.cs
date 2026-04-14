@@ -1,33 +1,57 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Domain.Abstractions;
 using BuildingBlocks.Shared.Utilities;
+using Microsoft.AspNetCore.Identity;
 
-namespace BuildingBlocks.Application.Commands.ChangePassword;
+namespace Identity.Application.Commands.ChangePassword;
 
-public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordCommand, Result>
+public class ChangePasswordCommandHandler 
+    : IRequestHandler<ChangePasswordCommand, Result>
 {
-    private readonly IIdentityService _identityService;
+    private readonly UserManager<IdentityUser> _userManager;
     private readonly ILogger<ChangePasswordCommandHandler> _logger;
 
     public ChangePasswordCommandHandler(
-        IIdentityService identityService,
+        UserManager<IdentityUser> userManager,
         ILogger<ChangePasswordCommandHandler> logger)
     {
-        _identityService = identityService;
+        _userManager = userManager;
         _logger = logger;
     }
 
-    public async Task<Result> Handle(ChangePasswordCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(
+        ChangePasswordCommand request, 
+        CancellationToken cancellationToken)
     {
-        var result = await _identityService.ChangePasswordAsync(
-            request.UserId, request.CurrentPassword, request.NewPassword, cancellationToken);
+        var user = await _userManager.FindByIdAsync(request.UserId);
+        if (user == null)
+        {
+            _logger.LogWarning("User with ID {UserId} not found.", request.UserId);
+            return Result.Failure("User not found.");
+        }
 
-        if (result.IsFailure)
-            _logger.LogWarning("ChangePassword failed for user {UserId}: {Error}", request.UserId, result.Error);
-        else
-            _logger.LogInformation("Password changed for user {UserId}.", request.UserId);
+        // Verify current password
+        var isPasswordValid = await _userManager.CheckPasswordAsync(
+            user, request.CurrentPassword);
+        if (!isPasswordValid)
+        {
+            _logger.LogWarning("Incorrect password for user {UserId}", request.UserId);
+            return Result.Failure("Current password is incorrect.");
+        }
 
-        return result;
+        // Change password
+        var result = await _userManager.ChangePasswordAsync(
+            user,
+            request.CurrentPassword,
+            request.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            _logger.LogWarning("Failed to change password for user {UserId}", request.UserId);
+            return Result.Failure($"Failed to change password: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
+
+        _logger.LogInformation("Password changed successfully for user {UserId}", request.UserId);
+        return Result.Success();
     }
 }
