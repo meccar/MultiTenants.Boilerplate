@@ -10,11 +10,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.9" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Interfaces\" />
-    <Folder Include="Models\" />
-  </ItemGroup>
-
 	<ItemGroup>
 		<ProjectReference Include="..\BuildingBlocks.Core\BuildingBlocks.Core.csproj" />
 	</ItemGroup>

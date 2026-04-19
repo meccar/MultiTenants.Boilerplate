@@ -1,32 +1,25 @@
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Domain.Abstractions;
-using BuildingBlocks.Application.Services;
 using BuildingBlocks.Shared.Utilities;
 
 namespace BuildingBlocks.Application.Commands.ForgotPassword;
 
 public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand, Result>
 {
-    private readonly IIdentityService _identityService;
-    private readonly IEmailSender _emailSender;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ForgotPasswordCommandHandler> _logger;
 
     public ForgotPasswordCommandHandler(
-        IIdentityService identityService,
-        IEmailSender emailSender,
         IConfiguration configuration,
         ILogger<ForgotPasswordCommandHandler> logger)
     {
-        _identityService = identityService;
-        _emailSender = emailSender;
         _configuration = configuration;
         _logger = logger;
     }
 
-    public async Task<Result> Handle(ForgotPasswordCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(
+        ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
         // Always return Success to avoid email enumeration attacks
         var token = await _identityService.GeneratePasswordResetTokenAsync(request.Email, cancellationToken);

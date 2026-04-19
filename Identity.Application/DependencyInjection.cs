@@ -1,4 +1,6 @@
 ﻿using Identity.Application.Behaviors;
+using Identity.Application.Services;
+using Identity.Domain.Interfaces;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,7 +17,8 @@ namespace Identity.Application
             services.AddScoped(
                 typeof(IPipelineBehavior<,>), 
                 typeof(PermissionValidationBehavior<,>));
-
+            services.AddScoped<ICurrentUser, CurrentUserService>();
+            services.AddScoped<IPermissionService, PermissionService>();
             return services;
         }
     }

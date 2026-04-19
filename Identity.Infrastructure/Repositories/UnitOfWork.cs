@@ -1,5 +1,5 @@
 ﻿
-using BuildingBlocks.Domain.Seedwork.Interface;
+using BuildingBlocks.Core.Seedwork.Interface;
 using Microsoft.AspNetCore.Identity;
 
 namespace Identity.Infrastructure.Repositories
