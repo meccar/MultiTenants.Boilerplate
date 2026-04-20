@@ -1,8 +1,7 @@
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using MongoDB.Driver;
-using Marten;
 using BuildingBlocks.Shared.Utilities;
+using Marten;
 
 namespace BuildingBlocks.Configurations;
 

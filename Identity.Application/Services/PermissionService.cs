@@ -1,5 +1,6 @@
 using Identity.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Identity.Application.Services;
 
@@ -8,19 +9,30 @@ public class PermissionService
 {
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly IMemoryCache _cache;
 
     public PermissionService(
         UserManager<IdentityUser> userManager,
-        RoleManager<IdentityRole> roleManager)
-    {
+        RoleManager<IdentityRole> roleManager,
+        IMemoryCache cache
+    ){
         _userManager = userManager;
         _roleManager = roleManager;
+        _cache = cache;
     }
 
     public async Task<(IList<string> Roles, IList<string> Permissions)>
-        GetUserRolesAndPermissionsAsync(Guid userId, Guid? tenantId,
-            CancellationToken ct = default)
-    {
+        GetUserRolesAndPermissionsAsync(
+            Guid userId,
+            Guid? tenantId,
+            CancellationToken ct = default
+    ){
+        var cacheKey = $"user-permissions:{userId}:{tenantId}";
+
+        if (_cache.TryGetValue(cacheKey,
+                out (IList<string> Roles, IList<string> Permissions) cached))
+            return cached;
+        
         var user = await _userManager.FindByIdAsync(userId.ToString())
                    ?? throw new UnauthorizedAccessException("User not found");
 
@@ -52,6 +64,10 @@ public class PermissionService
             .Distinct()
             .ToList();
 
-        return (roles, allPermissions);
+        var result = (roles, (IList<string>)allPermissions);
+
+        _cache.Set(cacheKey, result, TimeSpan.FromMinutes(5));
+        
+        return result;
     }
 }

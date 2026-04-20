@@ -1,5 +1,6 @@
 ﻿
 using BuildingBlocks.Core.Seedwork.Interface;
+using Identity.Infrastructure.Persistance.Data;
 using Microsoft.AspNetCore.Identity;
 
 namespace Identity.Infrastructure.Repositories
