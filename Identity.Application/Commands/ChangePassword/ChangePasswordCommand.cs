@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Identity.Application.Commands.ChangePassword;
 
-[RequirePermission(Permissions.Users.ChangePassword)]
+[RequirePermission("")]
 public record ChangePasswordCommand(
     string UserId,
     string CurrentPassword,

@@ -1,31 +1,34 @@
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Domain.Abstractions;
-using BuildingBlocks.Shared.Utilities;
 
-namespace BuildingBlocks.Application.Commands.ConfirmEmail;
+namespace Identity.Application.Commands.ConfirmEmail;
 
-public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, Result>
+public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, IdentityResult>
 {
-    private readonly IIdentityService _identityService;
     private readonly ILogger<ConfirmEmailCommandHandler> _logger;
+    private readonly UserManager<IdentityUser> _userManager;
 
     public ConfirmEmailCommandHandler(
-        IIdentityService identityService,
-        ILogger<ConfirmEmailCommandHandler> logger)
-    {
-        _identityService = identityService;
+        ILogger<ConfirmEmailCommandHandler> logger,
+        UserManager<IdentityUser> userManager
+    ){
         _logger = logger;
+        _userManager = userManager;
     }
 
-    public async Task<Result> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
+    public async Task<IdentityResult> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
     {
-        var result = await _identityService.ConfirmEmailAsync(request.UserId, request.Code, cancellationToken);
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+            throw new UnauthorizedAccessException();
+        
+        var result = await _userManager.ConfirmEmailAsync(user, request.Token);
 
-        if (result.IsFailure)
-            _logger.LogWarning("ConfirmEmail failed for user {UserId}: {Error}", request.UserId, result.Error);
+        if (!result.Succeeded)
+            _logger.LogWarning("ConfirmEmail failed for user {UserId}: {Error}", request.Email, result.Errors);
         else
-            _logger.LogInformation("Email confirmed for user {UserId}.", request.UserId);
+            _logger.LogInformation("Email confirmed for user {UserId}.", request.Email);
 
         return result;
     }

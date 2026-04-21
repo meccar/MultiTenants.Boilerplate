@@ -1,6 +1,9 @@
 using MediatR;
-using BuildingBlocks.Shared.Utilities;
+using Microsoft.AspNetCore.Identity;
 
-namespace BuildingBlocks.Application.Commands.ConfirmEmail;
+namespace Identity.Application.Commands.ConfirmEmail;
 
-public record ConfirmEmailCommand(string UserId, string Code) : IRequest<Result>;
+public record ConfirmEmailCommand(
+    string Email,
+    string Token
+    ) : IRequest<IdentityResult>;
