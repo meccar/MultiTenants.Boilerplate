@@ -3,20 +3,21 @@ using BuildingBlocks.Shared.Constants.Errors;
 using BuildingBlocks.Shared.Dtos;
 using BuildingBlocks.Shared.Helpers;
 using BuildingBlocks.Shared.Utilities;
+using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Tenancy.Domain.Interfaces;
 
-namespace BuildingBlocks.Application.Commands.Login;
+namespace Identity.Application.Commands.Login;
 
 public class OAuthAuthenticationCommandHandler
     : IRequestHandler<OAuthAuthenticationCommand, Result<string>>
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly UserManager<AppUser> _userManager;
+    private readonly RoleManager<AppRole> _roleManager;
+    private readonly SignInManager<AppUser> _signInManager;
     private readonly ITenant _tenant;
     private readonly IConfiguration _configuration;
     private readonly ILogger<OAuthAuthenticationCommandHandler> _logger;
@@ -25,9 +26,9 @@ public class OAuthAuthenticationCommandHandler
     private const string DefaultOAuthRole = "User";
 
     public OAuthAuthenticationCommandHandler(
-        UserManager<IdentityUser> userManager,
-        RoleManager<IdentityRole> roleManager,
-        SignInManager<IdentityUser> signInManager,
+        UserManager<AppUser> userManager,
+        RoleManager<AppRole> roleManager,
+        SignInManager<AppUser> signInManager,
         ITenant tenant,
         IConfiguration configuration,
         ILogger<OAuthAuthenticationCommandHandler> logger,

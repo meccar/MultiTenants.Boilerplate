@@ -1,19 +1,18 @@
-using BuildingBlocks.Application.Commands.CreateUserAccount;
+using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Tenancy.Domain.Interfaces;
-using Tenancy.Domain.Models;
 
-namespace BuildingBlocks.Application.Commands.Register;
+namespace Identity.Application.Commands.CreateUserAccount;
 
 public class CreateUserAccountCommandHandler 
     : IRequestHandler<CreateUserAccountCommand, IdentityResult>
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<AppUser> _userManager;
     private readonly ITenant _tenant;
 
     public CreateUserAccountCommandHandler(
-        UserManager<IdentityUser> userManager,
+        UserManager<AppUser> userManager,
         ITenant tenant
     )
     {
@@ -27,7 +26,7 @@ public class CreateUserAccountCommandHandler
         if (string.IsNullOrEmpty(_tenant.TenantId))
             throw new InvalidOperationException("Tenant context not available");
 
-        var user = new IdentityUser
+        var user = new AppUser
         {
             UserName = request.Email,
             Email = request.Email,

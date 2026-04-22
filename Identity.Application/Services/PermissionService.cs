@@ -1,3 +1,4 @@
+using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Caching.Memory;
@@ -7,13 +8,13 @@ namespace Identity.Application.Services;
 public class PermissionService 
     : IPermissionService
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly UserManager<AppUser> _userManager;
+    private readonly RoleManager<AppRole> _roleManager;
     private readonly IMemoryCache _cache;
 
     public PermissionService(
-        UserManager<IdentityUser> userManager,
-        RoleManager<IdentityRole> roleManager,
+        UserManager<AppUser> userManager,
+        RoleManager<AppRole> roleManager,
         IMemoryCache cache
     ){
         _userManager = userManager;

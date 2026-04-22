@@ -1,5 +1,6 @@
 using Identity.Application.Handlers.PermissionRequirement;
 using Identity.Application.Services;
+using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
 using Identity.Infrastructure.Persistance.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,7 @@ public static class IdentityConfiguration
                 configuration.GetConnectionString("IdentityDb")));
 
         // ASP.NET Identity
-        services.AddIdentity<IdentityUser, IdentityRole>(options =>
+        services.AddIdentity<AppUser, AppRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;

@@ -1,6 +1,6 @@
-using MediatR;
 using BuildingBlocks.Shared.Utilities;
+using MediatR;
 
-namespace BuildingBlocks.Application.Commands.ForgotPassword;
+namespace Identity.Application.Commands.ForgotPassword;
 
 public record ForgotPasswordCommand(string Email) : IRequest<Result>;

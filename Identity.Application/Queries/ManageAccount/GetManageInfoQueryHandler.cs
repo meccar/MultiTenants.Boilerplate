@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Queries.ManageAccount;
 using BuildingBlocks.Core.Abstractions;
 using BuildingBlocks.Shared.Dtos;
 using BuildingBlocks.Shared.Utilities;
@@ -7,7 +6,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Identity.Application.Queries.ManageAccount;
 
-public class GetManageInfoQueryHandler : IRequestHandler<GetManageInfoQuery, Result<ManageInfoDto>>
+public class GetManageInfoQueryHandler 
+    : IRequestHandler<GetManageInfoQuery, Result<ManageInfoDto>>
 {
     private readonly IIdentityService _identityService;
     private readonly ILogger<GetManageInfoQueryHandler> _logger;

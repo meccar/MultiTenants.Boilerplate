@@ -1,5 +1,6 @@
 ﻿
 using BuildingBlocks.Core.Seedwork.Interface;
+using Identity.Domain.Entities;
 using Identity.Infrastructure.Persistance.Data;
 using Microsoft.AspNetCore.Identity;
 
@@ -14,7 +15,7 @@ namespace Identity.Infrastructure.Repositories
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
-        public SignInManager<IdentityUser> SignInManager { get; }
+        public SignInManager<AppUser>? SignInManager { get; }
 
         public void Dispose()
         {

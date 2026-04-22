@@ -1,6 +1,6 @@
-using MediatR;
 using BuildingBlocks.Shared.Utilities;
+using MediatR;
 
-namespace BuildingBlocks.Application.Commands.Logout;
+namespace Identity.Application.Commands.Logout;
 
 public record LogoutCommand : IRequest<Result>;

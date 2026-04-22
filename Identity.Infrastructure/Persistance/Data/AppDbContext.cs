@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Identity.Infrastructure.Persistance.Data;
 
 public class AppDbContext
-    : IdentityDbContext<IdentityUser, IdentityRole, string>
+    : IdentityDbContext<AppUser, AppRole, string>
 {
     public AppDbContext(
         DbContextOptions<AppDbContext> options)

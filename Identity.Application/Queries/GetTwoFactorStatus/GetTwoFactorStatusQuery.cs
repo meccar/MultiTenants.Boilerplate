@@ -1,6 +1,6 @@
-using MediatR;
 using BuildingBlocks.Shared.Utilities;
+using MediatR;
 
-namespace BuildingBlocks.Application.Queries.GetTwoFactorStatus;
+namespace Identity.Application.Queries.GetTwoFactorStatus;
 
 public record GetTwoFactorStatusQuery(string UserId) : IRequest<Result<bool>>;

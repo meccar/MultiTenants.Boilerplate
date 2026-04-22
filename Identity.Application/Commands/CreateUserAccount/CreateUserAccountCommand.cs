@@ -2,7 +2,7 @@ using BuildingBlocks.Core.Seedwork.Command;
 using BuildingBlocks.Shared.Dtos.UserAccount;
 using Microsoft.AspNetCore.Identity;
 
-namespace BuildingBlocks.Application.Commands.CreateUserAccount;
+namespace Identity.Application.Commands.CreateUserAccount;
 
 public class CreateUserAccountCommand : ICommand<IdentityResult>
 {

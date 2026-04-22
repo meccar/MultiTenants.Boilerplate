@@ -1,17 +1,19 @@
+using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace Identity.Application.Commands.ConfirmEmail;
 
-public class ConfirmEmailCommandHandler : IRequestHandler<ConfirmEmailCommand, IdentityResult>
+public class ConfirmEmailCommandHandler 
+    : IRequestHandler<ConfirmEmailCommand, IdentityResult>
 {
     private readonly ILogger<ConfirmEmailCommandHandler> _logger;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<AppUser> _userManager;
 
     public ConfirmEmailCommandHandler(
         ILogger<ConfirmEmailCommandHandler> logger,
-        UserManager<IdentityUser> userManager
+        UserManager<AppUser> userManager
     ){
         _logger = logger;
         _userManager = userManager;

@@ -1,6 +1,6 @@
-using MediatR;
 using BuildingBlocks.Shared.Utilities;
+using MediatR;
 
-namespace BuildingBlocks.Application.Commands.ResendEmailConfirmation;
+namespace Identity.Application.Commands.ResendEmailConfirmation;
 
 public record ResendEmailConfirmationCommand(string Email) : IRequest<Result>;

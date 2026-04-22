@@ -1,10 +1,11 @@
+using BuildingBlocks.Shared.Utilities;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Shared.Utilities;
 
-namespace BuildingBlocks.Application.Queries.GetTwoFactorStatus;
+namespace Identity.Application.Queries.GetTwoFactorStatus;
 
-public class GetTwoFactorStatusQueryHandler : IRequestHandler<GetTwoFactorStatusQuery, Result<bool>>
+public class GetTwoFactorStatusQueryHandler 
+    : IRequestHandler<GetTwoFactorStatusQuery, Result<bool>>
 {
     private readonly ILogger<GetTwoFactorStatusQueryHandler> _logger;
 

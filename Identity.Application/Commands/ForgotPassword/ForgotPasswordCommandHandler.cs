@@ -1,21 +1,23 @@
+using BuildingBlocks.Shared.Utilities;
+using Identity.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Shared.Utilities;
-using Microsoft.AspNetCore.Identity;
 
-namespace BuildingBlocks.Application.Commands.ForgotPassword;
+namespace Identity.Application.Commands.ForgotPassword;
 
-public class ForgotPasswordCommandHandler : IRequestHandler<ForgotPasswordCommand, Result>
+public class ForgotPasswordCommandHandler 
+    : IRequestHandler<ForgotPasswordCommand, Result>
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<ForgotPasswordCommandHandler> _logger;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<AppUser> _userManager;
     
     public ForgotPasswordCommandHandler(
         IConfiguration configuration,
         ILogger<ForgotPasswordCommandHandler> logger,
-        UserManager<IdentityUser> userManager
+        UserManager<AppUser> userManager
     ){
         _configuration = configuration;
         _logger = logger;

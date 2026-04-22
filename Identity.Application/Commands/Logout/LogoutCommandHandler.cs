@@ -1,19 +1,20 @@
-using BuildingBlocks.Application.Commands.Logout;
 using BuildingBlocks.Shared.Utilities;
+using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 
 namespace Identity.Application.Commands.Logout;
 
-public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result>
+public class LogoutCommandHandler 
+    : IRequestHandler<LogoutCommand, Result>
 {
     private readonly ILogger<LogoutCommandHandler> _logger;
-    private readonly SignInManager<IdentityUser> _signInManager;
+    private readonly SignInManager<AppUser> _signInManager;
 
     public LogoutCommandHandler(
         ILogger<LogoutCommandHandler> logger,
-        SignInManager<IdentityUser> signInManager
+        SignInManager<AppUser> signInManager
     ){
         _logger = logger;
         _signInManager = signInManager;

@@ -1,6 +1,6 @@
-using BuildingBlocks.Application.Commands.CreateUserAccount;
 using BuildingBlocks.Attributes;
 using BuildingBlocks.Shared.Dtos.UserAccount;
+using Identity.Application.Commands.CreateUserAccount;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -1,3 +1,4 @@
+using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
@@ -8,11 +9,11 @@ public class ResetPasswordCommandHandler
     : IRequestHandler<ResetPasswordCommand, IdentityResult>
 {
     private readonly ILogger<ResetPasswordCommandHandler> _logger;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<AppUser> _userManager;
 
     public ResetPasswordCommandHandler(
         ILogger<ResetPasswordCommandHandler> logger,
-        UserManager<IdentityUser> userManager
+        UserManager<AppUser> userManager
     ){
         _logger = logger;
         _userManager = userManager;

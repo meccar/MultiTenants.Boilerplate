@@ -1,7 +1,7 @@
-using MediatR;
 using BuildingBlocks.Shared.Utilities;
+using MediatR;
 
-namespace BuildingBlocks.Application.Commands.Login;
+namespace Identity.Application.Commands.Login;
 
 public record LocalAuthenticationCommand(
   string UserName,

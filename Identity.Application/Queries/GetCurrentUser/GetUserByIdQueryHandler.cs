@@ -1,4 +1,3 @@
-using BuildingBlocks.Application.Queries.GetCurrentUser;
 using BuildingBlocks.Core.Abstractions;
 using BuildingBlocks.Shared.Dtos;
 using BuildingBlocks.Shared.Utilities;
@@ -6,7 +5,8 @@ using MediatR;
 
 namespace Identity.Application.Queries.GetCurrentUser;
 
-public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<UserDto?>>
+public class GetUserByIdQueryHandler 
+    : IRequestHandler<GetUserByIdQuery, Result<UserDto?>>
 {
     private readonly IIdentityService _identityService;
     private readonly ITenantProvider _tenantProvider;

@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using BuildingBlocks.Shared.Utilities;
+using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 
 namespace Identity.Application.Commands.ChangePassword;
@@ -8,11 +9,11 @@ namespace Identity.Application.Commands.ChangePassword;
 public class ChangePasswordCommandHandler 
     : IRequestHandler<ChangePasswordCommand, Result>
 {
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<AppUser> _userManager;
     private readonly ILogger<ChangePasswordCommandHandler> _logger;
 
     public ChangePasswordCommandHandler(
-        UserManager<IdentityUser> userManager,
+        UserManager<AppUser> userManager,
         ILogger<ChangePasswordCommandHandler> logger)
     {
         _userManager = userManager;

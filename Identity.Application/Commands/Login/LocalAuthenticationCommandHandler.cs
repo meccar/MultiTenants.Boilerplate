@@ -1,28 +1,28 @@
-using BuildingBlocks.Core.Abstractions;
 using BuildingBlocks.Shared.Constants.Errors;
 using BuildingBlocks.Shared.Helpers;
 using BuildingBlocks.Shared.Utilities;
+using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Tenancy.Domain.Interfaces;
 
-namespace BuildingBlocks.Application.Commands.Login;
+namespace Identity.Application.Commands.Login;
 
 public class LocalAuthenticationCommandHandler
     : IRequestHandler<LocalAuthenticationCommand, Result<string>>
 {
-    private readonly UserManager<IdentityUser> _userManager;
-    private readonly SignInManager<IdentityUser> _signInManager;
-    private readonly RoleManager<IdentityRole> _roleManager;
+    private readonly UserManager<AppUser> _userManager;
+    private readonly SignInManager<AppUser> _signInManager;
+    private readonly RoleManager<AppRole> _roleManager;
     private readonly ITenant _tenant;
     private readonly ILogger<LocalAuthenticationCommandHandler> _logger;
     private readonly JwtToken _jwtToken;
 
     public LocalAuthenticationCommandHandler(
-        UserManager<IdentityUser> userManager,
-        SignInManager<IdentityUser> signInManager,
-        RoleManager<IdentityRole> roleManager,
+        UserManager<AppUser> userManager,
+        SignInManager<AppUser> signInManager,
+        RoleManager<AppRole> roleManager,
         ITenant tenant,
         ILogger<LocalAuthenticationCommandHandler> logger,
         JwtToken jwtToken
