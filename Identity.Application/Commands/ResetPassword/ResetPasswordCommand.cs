@@ -1,9 +1,9 @@
 using MediatR;
-using BuildingBlocks.Shared.Utilities;
+using Microsoft.AspNetCore.Identity;
 
-namespace BuildingBlocks.Application.Commands.ResetPassword;
+namespace Identity.Application.Commands.ResetPassword;
 
 public record ResetPasswordCommand(
     string Email,
     string Token,
-    string NewPassword) : IRequest<Result>;
+    string NewPassword) : IRequest<IdentityResult>;

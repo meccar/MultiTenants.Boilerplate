@@ -1,26 +1,27 @@
-using MediatR;
-using Microsoft.Extensions.Logging;
-using BuildingBlocks.Domain.Abstractions;
+using BuildingBlocks.Application.Commands.Logout;
 using BuildingBlocks.Shared.Utilities;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
-namespace BuildingBlocks.Application.Commands.Logout;
+namespace Identity.Application.Commands.Logout;
 
 public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result>
 {
-    private readonly IIdentityService _identityService;
     private readonly ILogger<LogoutCommandHandler> _logger;
+    private readonly SignInManager<IdentityUser> _signInManager;
 
     public LogoutCommandHandler(
-        IIdentityService identityService,
-        ILogger<LogoutCommandHandler> logger)
-    {
-        _identityService = identityService;
+        ILogger<LogoutCommandHandler> logger,
+        SignInManager<IdentityUser> signInManager
+    ){
         _logger = logger;
+        _signInManager = signInManager;
     }
 
     public async Task<Result> Handle(LogoutCommand request, CancellationToken cancellationToken)
     {
-        await _identityService.SignOutAsync();
+        await _signInManager.SignOutAsync();
         _logger.LogInformation("User signed out.");
         return Result.Success();
     }

@@ -1,10 +1,11 @@
-using MediatR;
-using Microsoft.Extensions.Logging;
-using BuildingBlocks.Domain.Abstractions;
+using BuildingBlocks.Application.Queries.ManageAccount;
+using BuildingBlocks.Core.Abstractions;
 using BuildingBlocks.Shared.Dtos;
 using BuildingBlocks.Shared.Utilities;
+using MediatR;
+using Microsoft.Extensions.Logging;
 
-namespace BuildingBlocks.Application.Queries.ManageAccount;
+namespace Identity.Application.Queries.ManageAccount;
 
 public class GetManageInfoQueryHandler : IRequestHandler<GetManageInfoQuery, Result<ManageInfoDto>>
 {

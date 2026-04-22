@@ -1,59 +1,52 @@
+using BuildingBlocks.Application.Commands.ResendEmailConfirmation;
+using BuildingBlocks.Shared.Utilities;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Domain.Abstractions;
-using BuildingBlocks.Application.Services;
-using BuildingBlocks.Shared.Utilities;
 
-namespace BuildingBlocks.Application.Commands.ResendEmailConfirmation;
+namespace Identity.Application.Commands.ResendEmailConfirmation;
 
 public class ResendEmailConfirmationCommandHandler : IRequestHandler<ResendEmailConfirmationCommand, Result>
 {
-    private readonly IIdentityService _identityService;
-    private readonly IEmailSender _emailSender;
+    // private readonly IEmailSender _emailSender;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ResendEmailConfirmationCommandHandler> _logger;
+    private readonly UserManager<IdentityUser> _userManager;
+    private readonly SignInManager<IdentityUser> _signInManager;
 
     public ResendEmailConfirmationCommandHandler(
-        IIdentityService identityService,
-        IEmailSender emailSender,
+        // IEmailSender emailSender,
         IConfiguration configuration,
-        ILogger<ResendEmailConfirmationCommandHandler> logger)
-    {
-        _identityService = identityService;
-        _emailSender = emailSender;
+        ILogger<ResendEmailConfirmationCommandHandler> logger,
+        UserManager<IdentityUser> userManager,
+        SignInManager<IdentityUser> signInManager
+    ){
+        // _emailSender = emailSender;
         _configuration = configuration;
         _logger = logger;
+        _userManager = userManager;
+        _signInManager = signInManager;
     }
 
     public async Task<Result> Handle(ResendEmailConfirmationCommand request, CancellationToken cancellationToken)
     {
-        var tokenResult = await _identityService.GenerateEmailConfirmationTokenAsync(request.Email, cancellationToken);
-        if (tokenResult.IsFailure)
-        {
-            // "User not found" — respond with generic success to avoid enumeration
-            if (tokenResult.Error == "User not found.")
-            {
-                _logger.LogInformation("ResendEmailConfirmation: user not found (not disclosed).");
-                return Result.Success();
-            }
-            // "Email is already confirmed" — surface this error
-            return tokenResult;
-        }
-
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+            throw new UnauthorizedAccessException();
+        
+        var tokenResult = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        
         // token format: "userId|confirmationToken"
-        var parts = tokenResult.Value!.Split('|', 2);
-        var userId = parts[0];
-        var code = parts[1];
 
-        var baseUrl = _configuration["App:BaseUrl"]?.TrimEnd('/') ?? "https://localhost";
-        var callbackUrl = $"{baseUrl}/confirm-email?userId={Uri.EscapeDataString(userId)}&code={Uri.EscapeDataString(code)}";
+        // var baseUrl = _configuration["App:BaseUrl"]?.TrimEnd('/') ?? "https://localhost";
+        // var callbackUrl = $"{baseUrl}/confirm-email?userId={Uri.EscapeDataString(userId)}&code={Uri.EscapeDataString(code)}";
 
-        await _emailSender.SendEmailAsync(
-            request.Email,
-            "Confirm your email",
-            $"Please confirm your account by visiting: {callbackUrl}",
-            cancellationToken);
+        // await _emailSender.SendEmailAsync(
+        //    request.Email,
+        //    "Confirm your email",
+        //    $"Please confirm your account by visiting: {callbackUrl}",
+        //    cancellationToken);
 
         _logger.LogInformation("Email confirmation resent to {Email}.", request.Email);
         return Result.Success();

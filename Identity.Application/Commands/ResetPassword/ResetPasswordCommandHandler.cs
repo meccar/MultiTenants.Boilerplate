@@ -1,33 +1,42 @@
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
-using BuildingBlocks.Domain.Abstractions;
-using BuildingBlocks.Shared.Utilities;
 
-namespace BuildingBlocks.Application.Commands.ResetPassword;
+namespace Identity.Application.Commands.ResetPassword;
 
-public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand, Result>
+public class ResetPasswordCommandHandler 
+    : IRequestHandler<ResetPasswordCommand, IdentityResult>
 {
-    private readonly IIdentityService _identityService;
     private readonly ILogger<ResetPasswordCommandHandler> _logger;
+    private readonly UserManager<IdentityUser> _userManager;
 
     public ResetPasswordCommandHandler(
-        IIdentityService identityService,
-        ILogger<ResetPasswordCommandHandler> logger)
-    {
-        _identityService = identityService;
+        ILogger<ResetPasswordCommandHandler> logger,
+        UserManager<IdentityUser> userManager
+    ){
         _logger = logger;
+        _userManager = userManager;
     }
 
-    public async Task<Result> Handle(ResetPasswordCommand request, CancellationToken cancellationToken)
+    public async Task<IdentityResult> Handle(
+        ResetPasswordCommand request, CancellationToken cancellationToken)
     {
-        var result = await _identityService.ResetPasswordAsync(
-            request.Email, request.Token, request.NewPassword, cancellationToken);
+        var user = await _userManager.FindByEmailAsync(request.Email);
+        if (user == null)
+            throw new UnauthorizedAccessException();
+        
+        var result = await _userManager.ResetPasswordAsync(
+            user, request.Token, request.NewPassword);
 
-        if (result.IsFailure)
-            _logger.LogWarning("ResetPassword failed for {Email}: {Error}", request.Email, result.Error);
-        else
+        if (result.Succeeded)
+        {
             _logger.LogInformation("Password reset successfully for {Email}.", request.Email);
-
-        return result;
+            return result;
+        }
+        else
+        {
+            _logger.LogWarning("ResetPassword failed for {Email}: {Error}", request.Email, result.Errors);
+            throw new ApplicationException();
+        }
     }
 }

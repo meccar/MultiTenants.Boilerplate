@@ -1,9 +1,10 @@
-using MediatR;
-using BuildingBlocks.Domain.Abstractions;
+using BuildingBlocks.Application.Queries.GetCurrentUser;
+using BuildingBlocks.Core.Abstractions;
 using BuildingBlocks.Shared.Dtos;
 using BuildingBlocks.Shared.Utilities;
+using MediatR;
 
-namespace BuildingBlocks.Application.Queries.GetCurrentUser;
+namespace Identity.Application.Queries.GetCurrentUser;
 
 public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, Result<UserDto?>>
 {
