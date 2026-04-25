@@ -37,7 +37,7 @@ public static class HttpApiConfiguration
         services.AddHealthCheckConfiguration(configuration);
 
         // OAuth
-        services.AddOAuthConfiguration(configuration);
+        // services.AddOAuthConfiguration(configuration);
 
         // Multi-Tenancy
         services.AddMultiTenantConfiguration();

@@ -1,7 +1,10 @@
 ﻿using Identity.Application.Behaviors;
+using Identity.Application.Mapper;
 using Identity.Application.Services;
+using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,6 +22,11 @@ namespace Identity.Application
                 typeof(PermissionValidationBehavior<,>));
             services.AddScoped<ICurrentUser, CurrentUserService>();
             services.AddScoped<IPermissionService, PermissionService>();
+            
+            services.AddAutoMapper(option =>
+            {
+                option.CreateMap<AppUser, IdentityUser>();
+            });
             return services;
         }
     }
