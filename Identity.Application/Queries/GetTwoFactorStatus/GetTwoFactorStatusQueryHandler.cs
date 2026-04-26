@@ -16,8 +16,6 @@ public class GetTwoFactorStatusQueryHandler
 
     public Task<Result<bool>> Handle(GetTwoFactorStatusQuery request, CancellationToken cancellationToken)
     {
-        // Two-factor authentication requires IUserTwoFactorStore.
-        // This store is not yet implemented; returning false as a stub.
         _logger.LogDebug("GetTwoFactorStatus queried for user {UserId} — 2FA not yet supported.", request.UserId);
         return Task.FromResult(Result<bool>.Success(false));
     }

@@ -1,21 +1,35 @@
-﻿
-using BuildingBlocks.Core.Seedwork.Interface;
+﻿using BuildingBlocks.Core.Seedwork.Interface;
 using Identity.Domain.Entities;
 using Identity.Infrastructure.Persistance.Data;
 using Microsoft.AspNetCore.Identity;
 
-namespace Identity.Infrastructure.Repositories
+namespace Identity.Infrastructure.Persistance.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {
         private readonly AppDbContext _context;
         private bool _disposed;
+        
+        private readonly UserManager<AppUser> _userManager;
+        private readonly RoleManager<AppRole> _roleManager;
+        private readonly SignInManager<AppUser>? _signInManager;
 
-        public UnitOfWork(AppDbContext context)
-        {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
+        public UnitOfWork(
+            AppDbContext context,
+            UserManager<AppUser> userManager,
+            RoleManager<AppRole> roleManager,
+            SignInManager<AppUser> signInManager
+        ){
+            _context = context ??
+                       throw new ArgumentNullException(nameof(context));
+            _userManager = userManager ??
+                           throw new ArgumentNullException(nameof(userManager));
+            _roleManager = roleManager ??
+                           throw new ArgumentNullException(nameof(roleManager));
+            _signInManager = signInManager ??
+                             throw new ArgumentNullException(nameof(signInManager));
         }
-        public SignInManager<AppUser>? SignInManager { get; }
+        
 
         public void Dispose()
         {
@@ -25,15 +39,18 @@ namespace Identity.Infrastructure.Repositories
 
         public async Task BeginTransactionAsync(
             CancellationToken cancellationToken = default)
-        {
-            await _context.Database.BeginTransactionAsync(cancellationToken);
-        }
+                => await _context.Database.BeginTransactionAsync(cancellationToken);
 
+        public async Task<int> SaveChangesAsync(
+            CancellationToken cancellationToken = default)
+                => await _context.SaveChangesAsync(cancellationToken);
+        
         public async Task CommitTransactionAsync(
             CancellationToken cancellationToken = default)
         {
             try
             {
+                await SaveChangesAsync(cancellationToken);
                 await _context.Database.CommitTransactionAsync(cancellationToken);
             }
             catch

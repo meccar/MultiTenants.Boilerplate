@@ -55,7 +55,7 @@ public class LocalAuthenticationCommandHandler
             return Result<string>.Failure("User has no assigned roles");
 
         var token = await _jwtToken.GenerateJwtTokenAsync(
-            user.Id, user.Email, roles.ToList(), _tenant.TenantId);
+            user.Email, roles.ToList(), _tenant.TenantId);
         if (string.IsNullOrEmpty(token))
         {
             _logger.LogError("Token generation failed for user {UserId} in tenant {TenantId}",

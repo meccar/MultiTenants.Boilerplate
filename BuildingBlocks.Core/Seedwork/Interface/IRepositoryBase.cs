@@ -1,9 +1,9 @@
-﻿using BuildingBlocks.Domain.Seedwork.Aggregate;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System.Linq.Expressions;
 
 namespace BuildingBlocks.Core.Seedwork.Interface;
-public interface IRepositoryBase<T> where T : AggregateRoot
+public interface IRepositoryBase<TEntity, TKey>
+    where TEntity : class
 {
     public class PagedResult<TItem>
     {
@@ -18,68 +18,59 @@ public interface IRepositoryBase<T> where T : AggregateRoot
 
     #region Creation Methods
 
-    Task<EntityEntry<T>?> CreateAsync(T entity);
-    Task<IEnumerable<EntityEntry<T>>> CreateListAsync(IEnumerable<T> entities);
+    Task<EntityEntry<TEntity>?> CreateAsync(TEntity entity);
+    Task<IEnumerable<EntityEntry<TEntity>>> CreateListAsync(IEnumerable<TEntity> entities);
 
     #endregion
 
     #region Update Methods
 
-    Task<EntityEntry<T>?> UpdateAsync(T entity);
-    Task UpdateListAsync(IEnumerable<T> entities);
+    Task<EntityEntry<TEntity>?> UpdateAsync(TEntity entity);
+    Task UpdateListAsync(IEnumerable<TEntity> entities);
 
     #endregion
 
     #region Deletion and Restoration Methods
 
-    Task DeleteAsync(string id);
-    Task DeleteAsync(Guid id);
-    Task DeleteAsync(T entity);
-    Task DeleteListAsync(IEnumerable<T> entities);
-    Task DeleteListAsync(IEnumerable<string> ids);
-    Task DeleteListAsync(IEnumerable<Guid> ids);
-    Task SoftDeleteAsync(T entity);
-    Task SoftDeleteAsync(string id);
-    Task SoftDeleteAsync(Guid id);
-    Task SoftDeleteListAsync(IEnumerable<T> entities);
-    Task SoftDeleteListAsync(IEnumerable<string> ids);
-    Task SoftDeleteListAsync(IEnumerable<Guid> ids);
-    Task RestoreAsync(T entity);
-    Task RestoreAsync(string id);
-    Task RestoreAsync(Guid id);
+    Task DeleteAsync(TKey id);
+    Task DeleteAsync(TEntity entity);
+    Task DeleteListAsync(IEnumerable<TEntity> entities);
+    Task DeleteListAsync(IEnumerable<TKey> ids);
+    Task SoftDeleteAsync(TEntity entity);
+    Task SoftDeleteAsync(TKey id);
+    Task SoftDeleteListAsync(IEnumerable<TEntity> entities);
+    Task SoftDeleteListAsync(IEnumerable<TKey> ids);
+    Task RestoreAsync(TEntity entity);
+    Task RestoreAsync(TKey id);
 
     #endregion
 
     #region Query Methods
 
-    Task<PagedResult<T>> GetPagedAsync(int pageNumber, int pageSize);
-    Task<PagedResult<T>> GetPagedAsync(
+    Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize);
+    Task<PagedResult<TEntity>> GetPagedAsync(
         int pageNumber,
         int pageSize,
-        Expression<Func<T, bool>>? expression = null,
-        Expression<Func<T, object>>? orderBy = null,
+        Expression<Func<TEntity, bool>>? expression = null,
+        Expression<Func<TEntity, object>>? orderBy = null,
         bool ascending = true,
         bool trackChanges = false,
-        params Expression<Func<T, object>>[] includeProperties);
-    IQueryable<T> FindAll(bool trackChanges = false);
-    IQueryable<T> FindAll(bool trackChanges = false, params Expression<Func<T, object>>[] includeProperties);
-    IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression, bool trackChanges = false);
-    IQueryable<T> FindByCondition(Expression<Func<T, bool>> expression, bool trackChanges = false,
-        params Expression<Func<T, object>>[] includeProperties);
-    Task<IEnumerable<T>> FindAllAsync(bool trackChanges = false);
-    Task<IEnumerable<T>> FindAllAsync(bool trackChanges = false, params Expression<Func<T, object>>[] includeProperties);
-    Task<IEnumerable<T>> FindByConditionAsync(Expression<Func<T, bool>> expression, bool trackChanges = false);
-    Task<IEnumerable<T>> FindByConditionAsync(Expression<Func<T, bool>> expression, bool trackChanges = false,
-        params Expression<Func<T, object>>[] includeProperties);
-    Task<bool> ExistAsync(string id);
-    Task<bool> ExistAsync(Guid id);
+        params Expression<Func<TEntity, object>>[] includeProperties);
+    IQueryable<TEntity> FindAll(bool trackChanges = false);
+    IQueryable<TEntity> FindAll(bool trackChanges = false, params Expression<Func<TEntity, object>>[] includeProperties);
+    IQueryable<TEntity> FindByCondition(Expression<Func<TEntity, bool>> expression, bool trackChanges = false);
+    IQueryable<TEntity> FindByCondition(Expression<Func<TEntity, bool>> expression, bool trackChanges = false,
+        params Expression<Func<TEntity, object>>[] includeProperties);
+    Task<IEnumerable<TEntity>> FindAllAsync(bool trackChanges = false);
+    Task<IEnumerable<TEntity>> FindAllAsync(bool trackChanges = false, params Expression<Func<TEntity, object>>[] includeProperties);
+    Task<IEnumerable<TEntity>> FindByConditionAsync(Expression<Func<TEntity, bool>> expression, bool trackChanges = false);
+    Task<IEnumerable<TEntity>> FindByConditionAsync(Expression<Func<TEntity, bool>> expression, bool trackChanges = false,
+        params Expression<Func<TEntity, object>>[] includeProperties);
+    Task<bool> ExistAsync(TKey id);
     Task<int> CountAsync();
-    Task<int> CountAsync(Expression<Func<T, bool>> expression);
-    Task<T?> GetByIdAsync(string id);
-    Task<T?> GetByIdAsync(Guid id);
-    Task<T?> GetByIdAsync(string id, params Expression<Func<T, object>>[] includeProperties);
-    Task<T?> GetByIdAsync(Guid id, params Expression<Func<T, object>>[] includeProperties);
+    Task<int> CountAsync(Expression<Func<TEntity, bool>> expression);
+    Task<TEntity?> GetByIdAsync(TKey id);
+    Task<TEntity?> GetByIdAsync(TKey id, params Expression<Func<TEntity, object>>[] includeProperties);
 
     #endregion
 }
-

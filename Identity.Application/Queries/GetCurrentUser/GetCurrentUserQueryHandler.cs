@@ -8,14 +8,14 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Identity.Application.Queries.GetCurrentUser;
 
-public class GetUserByIdQueryHandler 
-    : IRequestHandler<GetUserByIdQuery, Result<UserDto?>>
+public class GetCurrentUserQueryHandler 
+    : IRequestHandler<GetCurrentUserQuery, Result<UserDto?>>
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly ITenantProvider _tenantProvider;
     private readonly IMapper _mapper;
     
-    public GetUserByIdQueryHandler(
+    public GetCurrentUserQueryHandler(
         UserManager<AppUser> userManager,
         ITenantProvider tenantProvider,
         IMapper mapper
@@ -26,12 +26,12 @@ public class GetUserByIdQueryHandler
     }
 
     public async Task<Result<UserDto?>> Handle(
-        GetUserByIdQuery request, CancellationToken cancellationToken)
+        GetCurrentUserQuery request, CancellationToken cancellationToken)
     {
         if (_tenantProvider.GetCurrentTenantId() == null)
             return Result<UserDto?>.Failure("Tenant context not found");
 
-        var userDto = await _userManager.FindByIdAsync(request.UserId);
+        var userDto = await _userManager.FindByIdAsync(request.token);
         return Result<UserDto?>.Success(_mapper.Map<UserDto>(userDto));
     }
 }

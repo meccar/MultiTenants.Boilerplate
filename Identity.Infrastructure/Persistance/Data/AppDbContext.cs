@@ -7,6 +7,10 @@ namespace Identity.Infrastructure.Persistance.Data;
 public class AppDbContext
     : IdentityDbContext<AppUser, AppRole, string>
 {
+    public DbSet<PermissionsEntity> Permissions => Set<PermissionsEntity>();
+    public DbSet<PoliciesEntity> Policies => Set<PoliciesEntity>();
+    public DbSet<RolePermissionEntity> RolePermissions => Set<RolePermissionEntity>();
+    
     public AppDbContext(
         DbContextOptions<AppDbContext> options)
         : base(options) { }
@@ -15,5 +19,8 @@ public class AppDbContext
     {
         base.OnModelCreating(builder);
         builder.HasDefaultSchema("identity");
+        builder.Entity<PoliciesEntity>()
+            .Property(policy => policy.Conditions)
+            .HasColumnType("jsonb");
     }
 }

@@ -1,26 +1,27 @@
+using BuildingBlocks.Core.Seedwork.Interface;
 using Identity.Domain.Entities;
-using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Tenancy.Domain.Interfaces;
 
 namespace Identity.Application.Commands.CreateUserAccount;
 
 public class CreateUserAccountCommandHandler 
-    : IRequestHandler<CreateUserAccountCommand, IdentityResult>
+    : TransactionalCommandHandler<CreateUserAccountCommand, IdentityResult>
 {
     private readonly UserManager<AppUser> _userManager;
     private readonly ITenant _tenant;
 
     public CreateUserAccountCommandHandler(
         UserManager<AppUser> userManager,
+        IUnitOfWork unitOfWork,
         ITenant tenant
-    )
+    ) : base(unitOfWork)
     {
         _userManager = userManager;
         _tenant = tenant;
     }
 
-    public async Task<IdentityResult> Handle(
+    protected override async Task<IdentityResult> HandleCommandAsync(
         CreateUserAccountCommand request, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(_tenant.TenantId))

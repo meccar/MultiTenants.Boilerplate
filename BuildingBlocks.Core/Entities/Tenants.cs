@@ -1,4 +1,4 @@
-﻿using BuildingBlocks.Domain.Seedwork.Aggregate;
+﻿using BuildingBlocks.Core.Seedwork.Aggregate;
 
 namespace BuildingBlocks.Core.Entities;
 public class Tenants : AggregateRoot

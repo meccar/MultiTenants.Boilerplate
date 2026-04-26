@@ -4,6 +4,6 @@ using MediatR;
 
 namespace Identity.Application.Queries.GetCurrentUser;
 
-public record GetUserByIdQuery(string UserId) : IRequest<Result<UserDto?>>;
+public record GetCurrentUserQuery(string token) : IRequest<Result<UserDto?>>;
 
 

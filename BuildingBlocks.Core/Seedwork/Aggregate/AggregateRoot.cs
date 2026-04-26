@@ -1,6 +1,6 @@
 ﻿using BuildingBlocks.Core.Seedwork.Entity;
 
-namespace BuildingBlocks.Domain.Seedwork.Aggregate
+namespace BuildingBlocks.Core.Seedwork.Aggregate
 {
-    public abstract class AggregateRoot : EntityBase { }
+    public abstract class AggregateRoot : AuditableEntity { }
 }

@@ -68,26 +68,21 @@ public class JwtToken
         if (user == null)
             throw new ArgumentNullException(nameof(user));
 
-        return GenerateJwtTokenAsync(user.Id, user.UserName, roles, tenantId);
+        return GenerateJwtTokenAsync(user.UserName, roles, tenantId);
     }
 
     public Task<string> GenerateJwtTokenAsync(
-        string userId,
         string? userName,
         IList<string> roles,
         string tenantId)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(userId))
-                throw new ArgumentException("User ID cannot be null or empty", nameof(userId));
-
             if (string.IsNullOrWhiteSpace(tenantId))
                 throw new ArgumentException("Tenant ID cannot be null or empty", nameof(tenantId));
 
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, userId),
                 new Claim(JwtRegisteredClaimNames.UniqueName, userName ?? string.Empty),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("tenant_id", tenantId)
@@ -114,14 +109,21 @@ public class JwtToken
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to generate JWT token for user {UserId}", userId);
+            _logger.LogError(ex, "Failed to generate JWT token for user {UserId}", userName);
             throw;
         }
     }
 
     public TokenValidationResult ValidateToken(string token)
     {
+        if (string.IsNullOrWhiteSpace(token))
+            return TokenValidationResult.Failure("Token cannot be null or empty");
+        
         var handler = new JwtSecurityTokenHandler();
+        
+        if (!handler.CanReadToken(token))
+            return TokenValidationResult.Failure("Token format is invalid");
+        
         try
         {
             handler.ValidateToken(token, new TokenValidationParameters
@@ -136,7 +138,9 @@ public class JwtToken
                 ClockSkew = TimeSpan.Zero
             }, out SecurityToken validated);
 
-            var jwt = (JwtSecurityToken)validated;
+            if (validated is not JwtSecurityToken jwt)
+                return TokenValidationResult.Failure("Token is not a valid JWT");
+            
             return TokenValidationResult.Success(jwt);
         }
         catch (SecurityTokenExpiredException ex)
@@ -144,10 +148,30 @@ public class JwtToken
             _logger.LogWarning("Token expired at {ExpiredAt}", ex.Expires);
             return TokenValidationResult.Failure("Token has expired");
         }
+        catch (SecurityTokenNotYetValidException ex)
+        {
+            _logger.LogWarning("Token not valid before {NotBefore}", ex.NotBefore);
+            return TokenValidationResult.Failure("Token is not yet valid");
+        }
+        catch (SecurityTokenInvalidIssuerException)
+        {
+            _logger.LogWarning("Token has invalid issuer");
+            return TokenValidationResult.Failure("Token issuer is invalid");
+        }
+        catch (SecurityTokenInvalidAudienceException)
+        {
+            _logger.LogWarning("Token has invalid audience");
+            return TokenValidationResult.Failure("Token audience is invalid");
+        }
         catch (SecurityTokenInvalidSignatureException)
         {
             _logger.LogWarning("Token signature is invalid");
             return TokenValidationResult.Failure("Token signature is invalid");
+        }
+        catch (SecurityTokenException ex)
+        {
+            _logger.LogWarning(ex, "Token validation failed: {Message}", ex.Message);
+            return TokenValidationResult.Failure("Token is invalid");
         }
         catch (Exception ex)
         {
@@ -162,7 +186,7 @@ public sealed class TokenValidationResult
     public bool IsValid { get; init; }
     public string? Error { get; init; }
 
-    public string? UserId { get; init; }
+    // public string? UserId { get; init; }
     public string? Username { get; init; }
     public string? TenantId { get; init; }
     public IReadOnlyList<string> Roles { get; init; } = [];
@@ -171,7 +195,7 @@ public sealed class TokenValidationResult
     public static TokenValidationResult Success(JwtSecurityToken jwt) => new()
     {
         IsValid = true,
-        UserId = jwt.Subject,
+        // UserId = jwt.Subject,
         Username = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value,
         TenantId = jwt.Claims.FirstOrDefault(c => c.Type == "tenant_id")?.Value,
         Roles = jwt.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList(),

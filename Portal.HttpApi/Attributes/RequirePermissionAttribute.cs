@@ -1,3 +1,4 @@
+using Identity.Application.Providers;
 using Microsoft.AspNetCore.Authorization;
 
 namespace BuildingBlocks.Attributes;
@@ -6,7 +7,5 @@ namespace BuildingBlocks.Attributes;
 public class RequirePermissionAttribute : AuthorizeAttribute
 {
     public RequirePermissionAttribute(string permission)
-    {
-        Policy = $"permission:{permission}";
-    }
+        : base($"{PermissionPolicyProvider.PolicyPrefix}{permission}") { }
 }

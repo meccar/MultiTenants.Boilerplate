@@ -8,8 +8,9 @@ public class PermissionRequirementHandler
 {
     private readonly ICurrentUser _currentUser;
 
-    public PermissionRequirementHandler(ICurrentUser currentUser)
-        => _currentUser = currentUser;
+    public PermissionRequirementHandler(
+        ICurrentUser currentUser)
+            => _currentUser = currentUser;
 
     protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
@@ -20,7 +21,7 @@ public class PermissionRequirementHandler
             context.Fail();
             return Task.CompletedTask;
         }
-
+        
         var satisfied = requirement.RequiredPermissions
             .All(_currentUser.HasPermission);
 
