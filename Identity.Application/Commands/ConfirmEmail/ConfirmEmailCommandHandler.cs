@@ -9,11 +9,11 @@ public class ConfirmEmailCommandHandler
     : IRequestHandler<ConfirmEmailCommand, IdentityResult>
 {
     private readonly ILogger<ConfirmEmailCommandHandler> _logger;
-    private readonly UserManager<AppUser> _userManager;
+    private readonly UserManager<UsersEntity> _userManager;
 
     public ConfirmEmailCommandHandler(
         ILogger<ConfirmEmailCommandHandler> logger,
-        UserManager<AppUser> userManager
+        UserManager<UsersEntity> userManager
     ){
         _logger = logger;
         _userManager = userManager;

@@ -2,8 +2,8 @@ namespace Identity.Domain.Entities;
 
 public class GroupRoleEntity
 {
-    public string RoleId { get; set; }
-    public int GroupId { get; set; }
-    public GroupsEntity Groups { get; set; }
-    public AppRole Roles { get; set; }
+    public Guid RoleId { get; set; }
+    public Guid GroupId { get; set; }
+    public GroupsEntity Groups { get; set; } = null!;
+    public RolesEntity Roles { get; set; } = null!;
 }

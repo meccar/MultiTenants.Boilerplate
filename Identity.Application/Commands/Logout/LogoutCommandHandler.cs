@@ -10,11 +10,11 @@ public class LogoutCommandHandler
     : IRequestHandler<LogoutCommand, Result>
 {
     private readonly ILogger<LogoutCommandHandler> _logger;
-    private readonly SignInManager<AppUser> _signInManager;
+    private readonly SignInManager<UsersEntity> _signInManager;
 
     public LogoutCommandHandler(
         ILogger<LogoutCommandHandler> logger,
-        SignInManager<AppUser> signInManager
+        SignInManager<UsersEntity> signInManager
     ){
         _logger = logger;
         _signInManager = signInManager;

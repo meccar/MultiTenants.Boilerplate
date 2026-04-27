@@ -9,11 +9,11 @@ public class ResetPasswordCommandHandler
     : IRequestHandler<ResetPasswordCommand, IdentityResult>
 {
     private readonly ILogger<ResetPasswordCommandHandler> _logger;
-    private readonly UserManager<AppUser> _userManager;
+    private readonly UserManager<UsersEntity> _userManager;
 
     public ResetPasswordCommandHandler(
         ILogger<ResetPasswordCommandHandler> logger,
-        UserManager<AppUser> userManager
+        UserManager<UsersEntity> userManager
     ){
         _logger = logger;
         _userManager = userManager;

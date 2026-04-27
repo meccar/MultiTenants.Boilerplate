@@ -10,15 +10,15 @@ namespace Identity.Infrastructure.Persistance.Repositories
         private readonly AppDbContext _context;
         private bool _disposed;
         
-        private readonly UserManager<AppUser> _userManager;
-        private readonly RoleManager<AppRole> _roleManager;
-        private readonly SignInManager<AppUser>? _signInManager;
+        private readonly UserManager<UsersEntity> _userManager;
+        private readonly RoleManager<RolesEntity> _roleManager;
+        private readonly SignInManager<UsersEntity>? _signInManager;
 
         public UnitOfWork(
             AppDbContext context,
-            UserManager<AppUser> userManager,
-            RoleManager<AppRole> roleManager,
-            SignInManager<AppUser> signInManager
+            UserManager<UsersEntity> userManager,
+            RoleManager<RolesEntity> roleManager,
+            SignInManager<UsersEntity> signInManager
         ){
             _context = context ??
                        throw new ArgumentNullException(nameof(context));

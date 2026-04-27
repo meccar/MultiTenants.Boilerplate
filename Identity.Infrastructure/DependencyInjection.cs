@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Identity.Infrastructure.Configurations.Repository;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Identity.Infrastructure
@@ -10,6 +11,9 @@ namespace Identity.Infrastructure
             IConfiguration configuration
         )
         {
+            services.AddRepositoryConfiguration(configuration);
+            
+            
             return services;
         }
     }

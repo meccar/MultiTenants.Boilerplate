@@ -2,8 +2,8 @@ namespace Identity.Domain.Entities;
 
 public class RolePolicyEntity
 {
-    public string RoleId { get; set; }
-    public int PolicyId { get; set; }
-    public AppRole Roles { get; set; }
-    public PoliciesEntity Policies { get; set; }
+    public Guid RoleId { get; set; }
+    public Guid PolicyId { get; set; }
+    public RolesEntity Roles { get; set; } = null!;
+    public PoliciesEntity Policies { get; set; } = null!;
 }

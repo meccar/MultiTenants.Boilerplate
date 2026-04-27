@@ -8,11 +8,11 @@ namespace Identity.Application.Commands.CreateUserAccount;
 public class CreateUserAccountCommandHandler 
     : TransactionalCommandHandler<CreateUserAccountCommand, IdentityResult>
 {
-    private readonly UserManager<AppUser> _userManager;
+    private readonly UserManager<UsersEntity> _userManager;
     private readonly ITenant _tenant;
 
     public CreateUserAccountCommandHandler(
-        UserManager<AppUser> userManager,
+        UserManager<UsersEntity> userManager,
         IUnitOfWork unitOfWork,
         ITenant tenant
     ) : base(unitOfWork)
@@ -27,7 +27,7 @@ public class CreateUserAccountCommandHandler
         if (string.IsNullOrEmpty(_tenant.TenantId))
             throw new InvalidOperationException("Tenant context not available");
 
-        var user = new AppUser
+        var user = new UsersEntity
         {
             UserName = request.Email,
             Email = request.Email,

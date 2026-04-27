@@ -15,9 +15,9 @@ namespace Identity.Application.Commands.Login;
 public class OAuthAuthenticationCommandHandler
     : IRequestHandler<OAuthAuthenticationCommand, Result<string>>
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly RoleManager<AppRole> _roleManager;
-    private readonly SignInManager<AppUser> _signInManager;
+    private readonly UserManager<UsersEntity> _userManager;
+    private readonly RoleManager<RolesEntity> _roleManager;
+    private readonly SignInManager<UsersEntity> _signInManager;
     private readonly ITenant _tenant;
     private readonly IConfiguration _configuration;
     private readonly ILogger<OAuthAuthenticationCommandHandler> _logger;
@@ -26,9 +26,9 @@ public class OAuthAuthenticationCommandHandler
     private const string DefaultOAuthRole = "User";
 
     public OAuthAuthenticationCommandHandler(
-        UserManager<AppUser> userManager,
-        RoleManager<AppRole> roleManager,
-        SignInManager<AppUser> signInManager,
+        UserManager<UsersEntity> userManager,
+        RoleManager<RolesEntity> roleManager,
+        SignInManager<UsersEntity> signInManager,
         ITenant tenant,
         IConfiguration configuration,
         ILogger<OAuthAuthenticationCommandHandler> logger,
@@ -79,7 +79,6 @@ public class OAuthAuthenticationCommandHandler
 
         var userDto = new UserDto
         {
-            Id = user.Id,
             Email = user.Email,
             UserName = user.UserName,
             EmailConfirmed = user.EmailConfirmed,

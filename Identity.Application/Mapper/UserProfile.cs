@@ -9,7 +9,7 @@ public class UserProfile
 {
     public UserProfile()
     {
-        CreateMap<AppUser, IdentityUser>();
-        CreateMap<IdentityUser, AppUser>();
+        CreateMap<UsersEntity, IdentityUser>();
+        CreateMap<IdentityUser, UsersEntity>();
     }
 }

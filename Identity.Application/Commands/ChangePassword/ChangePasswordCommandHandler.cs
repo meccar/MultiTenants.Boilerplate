@@ -9,11 +9,11 @@ namespace Identity.Application.Commands.ChangePassword;
 public class ChangePasswordCommandHandler 
     : IRequestHandler<ChangePasswordCommand, Result>
 {
-    private readonly UserManager<AppUser> _userManager;
+    private readonly UserManager<UsersEntity> _userManager;
     private readonly ILogger<ChangePasswordCommandHandler> _logger;
 
     public ChangePasswordCommandHandler(
-        UserManager<AppUser> userManager,
+        UserManager<UsersEntity> userManager,
         ILogger<ChangePasswordCommandHandler> logger)
     {
         _userManager = userManager;

@@ -12,15 +12,15 @@ public class ResendEmailConfirmationCommandHandler : IRequestHandler<ResendEmail
     // private readonly IEmailSender _emailSender;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ResendEmailConfirmationCommandHandler> _logger;
-    private readonly UserManager<AppUser> _userManager;
-    private readonly SignInManager<AppUser> _signInManager;
+    private readonly UserManager<UsersEntity> _userManager;
+    private readonly SignInManager<UsersEntity> _signInManager;
 
     public ResendEmailConfirmationCommandHandler(
         // IEmailSender emailSender,
         IConfiguration configuration,
         ILogger<ResendEmailConfirmationCommandHandler> logger,
-        UserManager<AppUser> userManager,
-        SignInManager<AppUser> signInManager
+        UserManager<UsersEntity> userManager,
+        SignInManager<UsersEntity> signInManager
     ){
         // _emailSender = emailSender;
         _configuration = configuration;

@@ -8,13 +8,13 @@ namespace Identity.Application.Services;
 public class PermissionService 
     : IPermissionService
 {
-    private readonly UserManager<AppUser> _userManager;
-    private readonly RoleManager<AppRole> _roleManager;
+    private readonly UserManager<UsersEntity> _userManager;
+    private readonly RoleManager<RolesEntity> _roleManager;
     private readonly IMemoryCache _cache;
 
     public PermissionService(
-        UserManager<AppUser> userManager,
-        RoleManager<AppRole> roleManager,
+        UserManager<UsersEntity> userManager,
+        RoleManager<RolesEntity> roleManager,
         IMemoryCache cache
     ){
         _userManager = userManager;

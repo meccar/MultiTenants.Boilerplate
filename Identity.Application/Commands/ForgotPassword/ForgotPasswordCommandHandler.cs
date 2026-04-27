@@ -12,12 +12,12 @@ public class ForgotPasswordCommandHandler
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<ForgotPasswordCommandHandler> _logger;
-    private readonly UserManager<AppUser> _userManager;
+    private readonly UserManager<UsersEntity> _userManager;
     
     public ForgotPasswordCommandHandler(
         IConfiguration configuration,
         ILogger<ForgotPasswordCommandHandler> logger,
-        UserManager<AppUser> userManager
+        UserManager<UsersEntity> userManager
     ){
         _configuration = configuration;
         _logger = logger;

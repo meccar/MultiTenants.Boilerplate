@@ -11,12 +11,12 @@ namespace Identity.Application.Queries.GetCurrentUser;
 public class GetCurrentUserQueryHandler 
     : IRequestHandler<GetCurrentUserQuery, Result<UserDto?>>
 {
-    private readonly UserManager<AppUser> _userManager;
+    private readonly UserManager<UsersEntity> _userManager;
     private readonly ITenantProvider _tenantProvider;
     private readonly IMapper _mapper;
     
     public GetCurrentUserQueryHandler(
-        UserManager<AppUser> userManager,
+        UserManager<UsersEntity> userManager,
         ITenantProvider tenantProvider,
         IMapper mapper
     ){

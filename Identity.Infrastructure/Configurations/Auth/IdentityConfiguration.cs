@@ -23,7 +23,7 @@ public static class IdentityConfiguration
                 configuration.GetConnectionString("IdentityDb")));
 
         // ASP.NET Identity
-        services.AddIdentity<AppUser, AppRole>(options =>
+        services.AddIdentity<UsersEntity, RolesEntity>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 8;

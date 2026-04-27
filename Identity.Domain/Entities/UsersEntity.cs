@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Identity.Domain.Entities;
 
-public class AppRole 
-    : IdentityRole, IAuditableEntity
+public class UsersEntity 
+    : IdentityUser<Guid>, IAuditableEntity
 {
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
