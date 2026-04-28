@@ -21,4 +21,8 @@
 		
 		<ProjectReference Include="..\Tenancy.Domain\Tenancy.Domain.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Decorators\" />
+	</ItemGroup>
 </Project>

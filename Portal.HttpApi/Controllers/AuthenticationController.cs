@@ -1,6 +1,7 @@
 using BuildingBlocks.Attributes;
 using BuildingBlocks.Shared.Dtos.UserAccount;
 using Identity.Application.Commands.CreateUserAccount;
+using Identity.Domain.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,6 @@ namespace BuildingBlocks.Controllers;
 [ApiController]
 //[ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/[controller]")]
-[Authorize(Policy = "InvoiceManagers")]
 public class AuthenticationController
     : ControllerBase
 {
@@ -27,13 +27,14 @@ public class AuthenticationController
     }
 
     [HttpPost("CreateUserAccount")]
-    [AllowAnonymous]
-    [RequirePermission("invoices:write")]
+    [RequirePermission("Account:CreateUserAccount")]
     //[ApiValidationFilter]
     public async Task<ActionResult> CreateUserAccount(
         [FromBody] CreateUserAccountDto createUserAccountDto)
     {
         _logger.LogInformation("START: CreateUserAccount");
+
+        var currentUser = HttpContext.GetCurrentUser();
 
         var loginResponse = await _mediator.Send(
             new CreateUserAccountCommand(

@@ -4,4 +4,7 @@ using MediatR;
 
 namespace Identity.Application.Queries.GetUserPermissions;
 
-public record GetUserPermissionsQuery(string Token) : IRequest<CurrentUserModel>;
+public record GetUserPermissionsQuery(
+    IReadOnlyList<string>? RequiredPermissions = null
+    ) 
+    : IRequest<CurrentUserModel>;

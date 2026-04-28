@@ -37,7 +37,7 @@ public static class IdentityConfiguration
         services.AddScoped<IPermissionService, PermissionService>();
 
         // Authorization handler
-        services.AddScoped<IAuthorizationHandler, PermissionRequirementHandler>();
+        services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
 
         return services;
     }
