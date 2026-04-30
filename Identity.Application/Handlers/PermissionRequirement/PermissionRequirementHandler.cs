@@ -25,12 +25,14 @@ public class PermissionAuthorizationHandler
             var httpContext = context.Resource as HttpContext;
 
             CurrentUserModel result;
-            if (httpContext?.Items.TryGetValue(HttpContextKeys.CurrentUser, out var cached) == true
+            if (httpContext?.Items.TryGetValue(
+                    HttpContextKeys.CurrentUser, out var cached) == true
                 && cached is CurrentUserModel cachedUser)
             {
                 var isAllowed = requirement.RequiredPermissions
-                    .All(p => cachedUser.Permissions.Names
-                        .Any(n => n.Equals(p, StringComparison.OrdinalIgnoreCase)));
+                    .All(p => cachedUser.Permissions
+                        .Any(x => 
+                            x.Name.Equals(p, StringComparison.OrdinalIgnoreCase)));
 
                 if (isAllowed)
                     context.Succeed(requirement);

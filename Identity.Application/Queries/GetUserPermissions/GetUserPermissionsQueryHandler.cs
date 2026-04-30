@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Identity.Application.Mapper;
 using BuildingBlocks.Shared.Helpers;
 using Identity.Domain.Interfaces;
@@ -61,10 +62,10 @@ public class GetUserPermissionsQueryHandler
 
         var currentUser = new CurrentUserModel
         {
-            Users = user.ToUsersModel(),
+            User = user,
             Roles = userRoleNames,
-            Permissions = permissions.ToPermissionsModel(),
-            Policies = policies.ToPoliciesModel()
+            Permissions = permissions,
+            Policies = policies
         };
 
         var missingPermissions = request.RequiredPermissions is { Count: > 0 }
@@ -84,7 +85,7 @@ public class GetUserPermissionsQueryHandler
 
         return new CurrentUserModel
         {
-            Users = currentUser.Users,
+            User = user,
             Roles = currentUser.Roles,
             Permissions = currentUser.Permissions,
             Policies = currentUser.Policies,
@@ -105,7 +106,8 @@ public class GetUserPermissionsQueryHandler
         return authorizationHeader["Bearer ".Length..].Trim();
     }
 
-    private static bool HasAccess(CurrentUserModel currentUser, string requiredPermission)
+    private static bool HasAccess(
+        CurrentUserModel currentUser, string requiredPermission)
     {
         var normalizedPermission = requiredPermission.Trim().ToLowerInvariant();
         if (string.IsNullOrWhiteSpace(normalizedPermission))
@@ -134,47 +136,44 @@ public class GetUserPermissionsQueryHandler
         return allowPolicies.Count == 0 || allowPolicies.Any();
     }
 
-    private static HashSet<string> BuildPermissionSet(PermissionsModel permissions)
+    private static HashSet<string> BuildPermissionSet(
+        List<PermissionsEntity> permissions)
     {
         var values = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var name in permissions.Names)
+        foreach (var permission in permissions)
         {
-            if (!string.IsNullOrWhiteSpace(name))
-                values.Add(name.Trim().ToLowerInvariant());
-        }
+            if (!string.IsNullOrWhiteSpace(permission.Name))
+                values.Add(permission.Name.Trim().ToLowerInvariant());
+            
+            for (var index = 0; index < permissions.Count; index++)
+            {
+                var resource = permission.Resource;
+                var action = permission.Action;
 
-        var count = Math.Min(permissions.Resources.Count, permissions.Actions.Count);
-        for (var index = 0; index < count; index++)
-        {
-            var resource = permissions.Resources[index];
-            var action = permissions.Actions[index];
+                if (string.IsNullOrWhiteSpace(resource) || string.IsNullOrWhiteSpace(action))
+                    continue;
 
-            if (string.IsNullOrWhiteSpace(resource) || string.IsNullOrWhiteSpace(action))
-                continue;
-
-            values.Add($"{resource.Trim().ToLowerInvariant()}:{action.Trim().ToLowerInvariant()}");
+                values.Add($"{resource.Trim().ToLowerInvariant()}:{action.Trim().ToLowerInvariant()}");
+            }
         }
 
         return values;
     }
 
-    private static IEnumerable<(string Name, string Effect, string Conditions)> BuildPolicies(
-        PoliciesModel policies)
+    private static IEnumerable<(
+        string Name,
+        string Effect,
+        JsonDocument Conditions)> BuildPolicies(
+        List<PoliciesEntity> policies)
     {
-        var count = new[]
-        {
-            policies.Names.Count,
-            policies.Effects.Count,
-            policies.Conditions.Count
-        }.Min();
-
-        for (var index = 0; index < count; index++)
+        foreach (var policy in policies)
         {
             yield return (
-                policies.Names[index],
-                policies.Effects[index],
-                policies.Conditions[index]);
+                policy.Name,
+                policy.Effect,
+                policy.Conditions
+            );
         }
     }
 }

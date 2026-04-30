@@ -1,3 +1,4 @@
+using BuildingBlocks.Shared.Dtos.Authentication;
 using BuildingBlocks.Shared.Utilities;
 using MediatR;
 
@@ -8,8 +9,5 @@ namespace Identity.Application.Commands.Login;
 /// Processes external login info and returns a JWT token, mirroring LocalAuthentication.
 /// </summary>
 public record OAuthAuthenticationCommand(
-    string Provider,
-    string ProviderKey,
-    string? Email,
-    string? DisplayName
+    OauthLoginDto LoginDto
 ) : IRequest<Result<string>>;

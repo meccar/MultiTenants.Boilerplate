@@ -19,7 +19,9 @@ public class ConfirmEmailCommandHandler
         _userManager = userManager;
     }
 
-    public async Task<IdentityResult> Handle(ConfirmEmailCommand request, CancellationToken cancellationToken)
+    public async Task<IdentityResult> Handle(
+        ConfirmEmailCommand request,
+        CancellationToken cancellationToken)
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)

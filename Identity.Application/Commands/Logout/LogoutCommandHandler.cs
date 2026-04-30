@@ -10,20 +10,31 @@ public class LogoutCommandHandler
     : IRequestHandler<LogoutCommand, Result>
 {
     private readonly ILogger<LogoutCommandHandler> _logger;
-    private readonly SignInManager<UsersEntity> _signInManager;
+    private readonly UserManager<UsersEntity> _userManager;
 
     public LogoutCommandHandler(
         ILogger<LogoutCommandHandler> logger,
-        SignInManager<UsersEntity> signInManager
+        UserManager<UsersEntity> userManager
     ){
         _logger = logger;
-        _signInManager = signInManager;
+        _userManager = userManager;
     }
 
-    public async Task<Result> Handle(LogoutCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(
+        LogoutCommand request,
+        CancellationToken cancellationToken)
     {
-        await _signInManager.SignOutAsync();
-        _logger.LogInformation("User signed out.");
+        var result = await _userManager.UpdateSecurityStampAsync(request.CurrentUser.User);
+        if (!result.Succeeded)
+        {
+            _logger.LogError("Failed to invalidate token for user {UserId}", 
+                request.CurrentUser.User.Id);
+            return Result.Failure("Logout failed");
+        }
+        
+        _logger.LogInformation("User {UserId} signed out successfully", 
+            request.CurrentUser.User.Id);
+        
         return Result.Success();
     }
 }

@@ -13,42 +13,43 @@ public class LocalAuthenticationCommandHandler
     : IRequestHandler<LocalAuthenticationCommand, Result<string>>
 {
     private readonly UserManager<UsersEntity> _userManager;
-    private readonly SignInManager<UsersEntity> _signInManager;
-    private readonly RoleManager<RolesEntity> _roleManager;
     private readonly ITenant _tenant;
     private readonly ILogger<LocalAuthenticationCommandHandler> _logger;
     private readonly JwtToken _jwtToken;
 
     public LocalAuthenticationCommandHandler(
         UserManager<UsersEntity> userManager,
-        SignInManager<UsersEntity> signInManager,
-        RoleManager<RolesEntity> roleManager,
         ITenant tenant,
         ILogger<LocalAuthenticationCommandHandler> logger,
         JwtToken jwtToken
     ){
         _userManager = userManager;
-        _signInManager = signInManager;
-        _roleManager = roleManager;
         _tenant = tenant;
         _logger = logger;
         _jwtToken = jwtToken;
     }
 
     public async Task<Result<string>> Handle(
-        LocalAuthenticationCommand request, CancellationToken cancellationToken)
+        LocalAuthenticationCommand request,
+        CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(_tenant.TenantId))
             throw new InvalidOperationException("Tenant context not available");
 
-        var user = await _userManager.FindByNameAsync(request.UserName)
-            ?? await _userManager.FindByEmailAsync(request.UserName);
+        var user = await _userManager.FindByNameAsync(
+                       request.LoginDto.UserName)
+            ?? await _userManager.FindByEmailAsync(
+                request.LoginDto.UserName);
         if (user is null)
-            return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
+            return Result<string>.Failure(
+                AuthenticationErrors.InvalidCredentials);
 
-        var checkPasswordSignIn = await _signInManager.PasswordSignInAsync(user, request.Password, true, true);
-        if (!checkPasswordSignIn.Succeeded)
-            return Result<string>.Failure(AuthenticationErrors.InvalidCredentials);
+        var isValid = await _userManager.CheckPasswordAsync(
+            user, 
+            request.LoginDto.Password);
+        if (!isValid)
+            return Result<string>.Failure(
+                AuthenticationErrors.InvalidCredentials);
 
         var roles = await _userManager.GetRolesAsync(user);
         if (roles.Count == 0)
