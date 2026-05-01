@@ -2,10 +2,11 @@ using BuildingBlocks.Attributes;
 using BuildingBlocks.Shared.Dtos.Authentication;
 using BuildingBlocks.Shared.Dtos.UserAccount;
 using Identity.Application.Commands.ChangePassword;
-using Identity.Application.Commands.ConfirmEmail;
 using Identity.Application.Commands.CreateUserAccount;
+using Identity.Application.Commands.ForgotPassword;
 using Identity.Application.Commands.Login;
 using Identity.Application.Commands.Logout;
+using Identity.Application.Commands.ResetPassword;
 using Identity.Domain.Extensions;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -138,7 +139,7 @@ public class AuthenticationController
     public async Task<ActionResult> ChangePasswordByOwner(
         [FromBody] ChangePasswordDto changePasswordDto)
     {
-        _logger.LogInformation($"START: {nameof(ChangeLoggedOutUserPassword)}");
+        _logger.LogInformation($"START: {nameof(ChangePasswordByOwner)}");
 
         var currentUser = _httpContextAccessor.HttpContext!.GetCurrentUser();
         
@@ -146,7 +147,40 @@ public class AuthenticationController
             new ChangePasswordByOwnerCommand(
                 currentUser, changePasswordDto));
         
-        _logger.LogInformation($"END: {nameof(ChangeLoggedOutUserPassword)}");
+        _logger.LogInformation($"END: {nameof(ChangePasswordByOwner)}");
+        
+        return Accepted(result);
+    }
+    
+    [HttpPost("ForgotPassword")]
+    [AllowAnonymous]
+    public async Task<ActionResult> ForgotPassword(
+        [FromBody] string email)
+    {
+        _logger.LogInformation($"START: {nameof(ForgotPassword)}");
+
+        var result = await _mediator.Send(
+            new ForgotPasswordCommand(
+                email));
+        
+        _logger.LogInformation($"END: {nameof(ForgotPassword)}");
+        
+        return Accepted(result);
+    }
+    
+    [HttpPost("ResetPassword")]
+    [AllowAnonymous]
+    public async Task<ActionResult> ResetPassword(
+        [FromBody] ResetPasswordDto resetPasswordDto,
+        [FromQuery] string token)
+    {
+        _logger.LogInformation($"START: {nameof(ResetPassword)}");
+
+        var result = await _mediator.Send(
+            new ResetPasswordCommand(
+                token, resetPasswordDto));
+        
+        _logger.LogInformation($"END: {nameof(ResetPassword)}");
         
         return Accepted(result);
     }

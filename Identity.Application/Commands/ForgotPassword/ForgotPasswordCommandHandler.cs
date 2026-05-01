@@ -1,7 +1,10 @@
+using System.Text;
+using BuildingBlocks.Shared.Constants;
 using BuildingBlocks.Shared.Utilities;
 using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -27,15 +30,18 @@ public class ForgotPasswordCommandHandler
     public async Task<Result> Handle(
         ForgotPasswordCommand request, CancellationToken cancellationToken)
     {
-        // Always return Success to avoid email enumeration attacks
         var user  = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            throw new UnauthorizedAccessException();
-        
+        {
+            return Result.Failure(ResponseMessageConstants.Unauthorized);
+        }        
         var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        var baseUrl = _configuration["App:BaseUrl"]?.TrimEnd('/') ?? "https://localhost";
-        var callbackUrl = $"{baseUrl}/reset-password?email={Uri.EscapeDataString(request.Email)}&token={Uri.EscapeDataString(token)}";
+        var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+        
+        var baseUrl = _configuration["App:BaseUrl"]?.TrimEnd('/') 
+                      ?? throw new InvalidOperationException($"{nameof(ForgotPasswordCommandHandler)}: BaseUrl is not configured");
+        var callbackUrl = $"{baseUrl}/reset-password?token={encodedToken}";
 
         //-- await _emailSender.SendEmailAsync(
           //  request.Email,
