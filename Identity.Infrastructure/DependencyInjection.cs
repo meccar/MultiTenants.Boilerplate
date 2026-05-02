@@ -1,4 +1,6 @@
-﻿using Identity.Infrastructure.Configurations.Repository;
+﻿using Identity.Infrastructure.Configurations.Auth;
+using Identity.Infrastructure.Configurations.Jobs;
+using Identity.Infrastructure.Configurations.Repository;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,8 +13,10 @@ namespace Identity.Infrastructure
             IConfiguration configuration
         )
         {
+            services.AddIdentityConfiguration(configuration);
+            services.AddJwtConfiguration(configuration);
             services.AddRepositoryConfiguration(configuration);
-            
+            services.AddQuartzInfrastructure();
             
             return services;
         }
