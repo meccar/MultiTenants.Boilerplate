@@ -1,3 +1,8 @@
+using Identity.Domain.Interfaces;
+using Quartz;
+
+namespace Identity.Infrastructure.Jobs;
+
 public class QuartzJobEnqueuer : IJobEnqueuer
 {
     private readonly ISchedulerFactory _schedulerFactory;

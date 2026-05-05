@@ -1,3 +1,7 @@
+using Quartz;
+
+namespace Identity.Domain.Interfaces;
+
 public interface IJobEnqueuer
 {
     Task EnqueueAsync<TJob>(
