@@ -12,6 +12,7 @@ public class QuartzJobEnqueuer : IJobEnqueuer
 
     public async Task EnqueueAsync<TJob>(
         JobDataMap data,
+        Action<TriggerBuilder>? configureTrigger = null,
         string group = "default",
         CancellationToken cancellationToken = default)
         where TJob : IJob
@@ -25,10 +26,13 @@ public class QuartzJobEnqueuer : IJobEnqueuer
             .Build();
 
         var trigger = TriggerBuilder.Create()
-            .WithIdentity($"{typeof(TJob).Name}-trigger-{id}", group)
-            .StartNow()
-            .Build();
+            .WithIdentity($"{typeof(TJob).Name}-trigger-{id}", group);
 
-        await scheduler.ScheduleJob(job, trigger, cancellationToken);
+        if (configureTrigger is null)
+            trigger.StartNow();
+        else
+            configureTrigger(trigger);
+        
+        await scheduler.ScheduleJob(job, trigger.Build(), cancellationToken);
     }
 }
