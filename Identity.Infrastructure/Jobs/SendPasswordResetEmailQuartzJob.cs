@@ -1,4 +1,4 @@
-using BuildingBlocks.Application.Helpers;
+using BuildingBlocks.Shared.Helpers;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.Logging;
 using Quartz;

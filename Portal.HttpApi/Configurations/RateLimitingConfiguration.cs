@@ -1,6 +1,6 @@
 ﻿using System.Threading.RateLimiting;
 
-namespace BuildingBlocks.Configurations;
+namespace Host.Configurations;
 public static class RateLimitingConfiguration
 {
     public static IServiceCollection AddRateLimitingConfiguration(

@@ -1,4 +1,4 @@
-namespace BuildingBlocks.Configurations;
+namespace Host.Configurations;
 
 /// <summary>
 /// API version and base path options. Bound from configuration "Api" section.

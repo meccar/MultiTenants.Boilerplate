@@ -1,5 +1,6 @@
 using System.Text;
 using BuildingBlocks.Shared.Constants;
+using BuildingBlocks.Shared.Helpers;
 using BuildingBlocks.Shared.Utilities;
 using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
@@ -43,8 +44,8 @@ public class ForgotPasswordCommandHandler
 
         var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
         
-        var baseUrl = _configuration["App:BaseUrl"]?.TrimEnd('/') 
-                      ?? throw new InvalidOperationException($"{nameof(ForgotPasswordCommandHandler)}: BaseUrl is not configured");
+        var baseUrl = _configuration.GetRequiredValue(
+            "App:BaseUrl");
         var callbackUrl = $"{baseUrl}/reset-password?token={encodedToken}";
 
         await _passwordResetEmailJob.EnqueueAsync(

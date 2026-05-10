@@ -1,6 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
-
-namespace BuildingBlocks.Configurations;
+namespace Host.Configurations;
 
 /// <summary>
 /// Configuration for authorization services

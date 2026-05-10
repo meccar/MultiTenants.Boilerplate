@@ -1,8 +1,7 @@
-using Microsoft.Extensions.DependencyInjection;
+using BuildingBlocks.Shared.Helpers;
 using Microsoft.OpenApi;
-using BuildingBlocks.Shared.Constants;
 
-namespace BuildingBlocks.Configurations;
+namespace Host.Configurations;
 
 /// <summary>
 /// Configuration for Swagger/OpenAPI documentation
@@ -18,7 +17,7 @@ public static class SwaggerConfiguration
     {
         services.AddControllers();
         services.AddEndpointsApiExplorer();
-        var apiVersion = configuration["Api:Version"]?.Trim() ?? "v1";
+        var apiVersion = configuration.GetRequiredValue("Api:Version");
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc(apiVersion, new OpenApiInfo
@@ -30,10 +29,11 @@ public static class SwaggerConfiguration
 
             // Add security definition for OAuth
             // OAuth URLs can be overridden via configuration: Authentication:Google:AuthorizationUrl and Authentication:Google:TokenUrl
-            var authorizationUrl = configuration["Authentication:Google:AuthorizationUrl"]
-                ?? AuthConstants.GoogleAuthorizationUrl;
-            var tokenUrl = configuration["Authentication:Google:TokenUrl"]
-                ?? AuthConstants.GoogleTokenUrl;
+            var authorizationUrl = ConfigurationHelper.GetRequiredValue(
+                    configuration, "Authentication:Google:AuthorizationUrl");
+            
+            var tokenUrl = ConfigurationHelper.GetRequiredValue(
+                    configuration, "Authentication:Google:TokenUrl");
 
             c.AddSecurityDefinition("Google", new OpenApiSecurityScheme
             {

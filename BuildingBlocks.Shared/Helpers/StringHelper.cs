@@ -1,4 +1,4 @@
-﻿namespace BuildingBlocks.Application.Helpers;
+﻿namespace BuildingBlocks.Shared.Helpers;
 public class StringHelper
 {
     public static string MaskInput(string input)

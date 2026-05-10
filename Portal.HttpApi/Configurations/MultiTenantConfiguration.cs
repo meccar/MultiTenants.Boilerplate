@@ -1,9 +1,8 @@
 using Finbuckle.MultiTenant.Abstractions;
 using Finbuckle.MultiTenant.AspNetCore.Extensions;
 using Finbuckle.MultiTenant.Extensions;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace BuildingBlocks.Configurations;
+namespace Host.Configurations;
 
 /// <summary>
 /// Configuration for multi-tenant services

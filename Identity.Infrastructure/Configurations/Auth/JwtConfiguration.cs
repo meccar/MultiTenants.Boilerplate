@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using System.Text;
+using BuildingBlocks.Shared.Configuration;
+using BuildingBlocks.Shared.Helpers;
 using Identity.Domain.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
@@ -13,6 +15,8 @@ public static class JwtConfiguration
     public static IServiceCollection AddJwtConfiguration(
         this IServiceCollection services, IConfiguration configuration)
     {
+        var jwt = configuration.GetSection<JwtOptions>("Jwt");
+        
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
@@ -20,11 +24,11 @@ public static class JwtConfiguration
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(configuration["Jwt:Secret"])),
+                        Encoding.UTF8.GetBytes(jwt.Secret)),
                     ValidateIssuer   = true,
-                    ValidIssuer      = configuration["Jwt:Issuer"],
+                    ValidIssuer      = jwt.Issuer,
                     ValidateAudience = true,
-                    ValidAudience    = configuration["Jwt:Audience"],
+                    ValidAudience    = jwt.Audience,
                     ValidateLifetime = true,
                     ClockSkew        = TimeSpan.Zero,
                     // Map "sub" → ClaimTypes.NameIdentifier automatically

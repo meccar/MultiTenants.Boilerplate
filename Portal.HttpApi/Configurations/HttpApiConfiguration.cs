@@ -1,7 +1,4 @@
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace BuildingBlocks.Configurations;
+namespace Host.Configurations;
 
 /// <summary>
 /// HttpApi layer dependency injection configuration

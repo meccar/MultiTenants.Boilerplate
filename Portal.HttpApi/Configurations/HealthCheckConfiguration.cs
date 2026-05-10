@@ -1,9 +1,9 @@
-using Microsoft.Extensions.Diagnostics.HealthChecks;
-using MongoDB.Driver;
 using BuildingBlocks.Shared.Utilities;
 using Marten;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using MongoDB.Driver;
 
-namespace BuildingBlocks.Configurations;
+namespace Host.Configurations;
 
 public static class HealthCheckConfiguration
 {

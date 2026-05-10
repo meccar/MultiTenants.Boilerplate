@@ -1,7 +1,8 @@
-using Microsoft.Extensions.DependencyInjection;
+using BuildingBlocks.Shared.Configuration;
 using BuildingBlocks.Shared.Constants;
+using BuildingBlocks.Shared.Helpers;
 
-namespace BuildingBlocks.Configurations;
+namespace Host.Configurations;
 
 /// <summary>
 /// Configuration for OAuth services (Google OAuth)
@@ -15,37 +16,13 @@ public static class OAuthConfiguration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Retrieve and validate Google OAuth credentials
-        var googleClientId = configuration["Authentication:Google:ClientId"];
-        var googleClientSecret = configuration["Authentication:Google:ClientSecret"];
-
-        // Validate ClientId - fail fast with clear error message
-        if (string.IsNullOrWhiteSpace(googleClientId) ||
-            googleClientId.Equals("YOUR_GOOGLE_CLIENT_ID", StringComparison.OrdinalIgnoreCase))
-        {
-            var envVarName = "Authentication__Google__ClientId";
-            throw new InvalidOperationException(
-                $"Google OAuth ClientId is required but not configured. " +
-                $"Please set the environment variable '{envVarName}' or configure it via User Secrets. " +
-                $"For development, use: dotnet user-secrets set \"Authentication:Google:ClientId\" \"your-client-id\"");
-        }
-
-        // Validate ClientSecret - fail fast with clear error message
-        if (string.IsNullOrWhiteSpace(googleClientSecret) ||
-            googleClientSecret.Equals("YOUR_GOOGLE_CLIENT_SECRET", StringComparison.OrdinalIgnoreCase))
-        {
-            var envVarName = "Authentication__Google__ClientSecret";
-            throw new InvalidOperationException(
-                $"Google OAuth ClientSecret is required but not configured. " +
-                $"Please set the environment variable '{envVarName}' or configure it via User Secrets. " +
-                $"For development, use: dotnet user-secrets set \"Authentication:Google:ClientSecret\" \"your-client-secret\"");
-        }
-
+        var googleOption = configuration.GetSection<GoogleOptions>("Google");
+        
         services.AddAuthentication()
             .AddGoogle(AuthConstants.GoogleScheme, options =>
             {
-                options.ClientId = googleClientId;
-                options.ClientSecret = googleClientSecret;
+                options.ClientId = googleOption.ClientId;
+                options.ClientSecret = googleOption.ClientSecret;
                 options.SignInScheme = AuthConstants.DefaultScheme;
                 options.CallbackPath = $"/api/{configuration["Api:Version"]?.Trim() ?? "v1"}/auth/login/google/callback";
             });

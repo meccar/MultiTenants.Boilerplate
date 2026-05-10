@@ -5,59 +5,26 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using BuildingBlocks.Shared.Configuration;
 
 namespace BuildingBlocks.Shared.Helpers;
 
 public class JwtToken
 {
-    private readonly IConfiguration _configuration;
     private readonly ILogger<JwtToken> _logger;
     private readonly SymmetricSecurityKey _signingKey;
 
-    private readonly string _jwtSecret;
-    private readonly string _jwtIssuer;
-    private readonly string _jwtAudience;
-    private readonly int _expirationMinutes;
+    private readonly JwtOptions _jwt;
 
     public JwtToken(
         IConfiguration configuration,
         ILogger<JwtToken> logger
     )
     {
-        _configuration = configuration;
         _logger = logger;
+        _jwt = configuration.GetSection<JwtOptions>("Jwt");
 
-        _jwtSecret = _configuration["Jwt:Secret"] ?? "";
-        _jwtIssuer = _configuration["Jwt:Issuer"] ?? "";
-        _jwtAudience = _configuration["Jwt:Audience"] ?? "";
-        
-        if (!int.TryParse(
-            _configuration["Jwt:ExpirationMinutes"],
-            out _expirationMinutes))
-        {
-            _expirationMinutes = 120;
-        }
-
-        ValidateJwtConfiguration();
-
-        _signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSecret));
-    }
-
-    private void ValidateJwtConfiguration()
-    {
-        if (string.IsNullOrEmpty(_jwtSecret)
-            || string.IsNullOrEmpty(_jwtIssuer)
-            || string.IsNullOrEmpty(_jwtAudience))
-        {
-            _logger.LogError("JWT configuration is incomplete or missing");
-            throw new InvalidOperationException("Jwt configuration is incomplete");
-        }
-
-        if (_expirationMinutes <= 0)
-        {
-            _logger.LogError("JWT expiration minutes must be greater than zero");
-            throw new InvalidOperationException("Jwt expiration time is invalid");
-        }
+        _signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Secret));
     }
 
     public Task<string> GenerateJwtTokenAsync(
@@ -97,11 +64,11 @@ public class JwtToken
 
             var now = DateTime.UtcNow;
             var token = new JwtSecurityToken(
-                issuer: _jwtIssuer,
-                audience: _jwtAudience,
+                issuer: _jwt.Issuer,
+                audience: _jwt.Audience,
                 claims: claims,
                 notBefore: now,
-                expires: now.AddMinutes(_expirationMinutes),
+                expires: now.AddMinutes(_jwt.ExpirationMinutes),
                 signingCredentials: credentials);
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
@@ -129,9 +96,9 @@ public class JwtToken
             handler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = _jwtIssuer,
+                ValidIssuer = _jwt.Issuer,
                 ValidateAudience = true,
-                ValidAudience = _jwtAudience,
+                ValidAudience = _jwt.Audience,
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = _signingKey,
                 ValidateLifetime = true,

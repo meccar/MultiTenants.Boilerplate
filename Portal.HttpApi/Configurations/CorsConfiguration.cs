@@ -1,4 +1,4 @@
-﻿namespace BuildingBlocks.Configurations;
+﻿namespace Host.Configurations;
 public static class CorsConfiguration
 {
     public static IServiceCollection AddCorsConfiguration(
