@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using BuildingBlocks.Shared.Helpers;
 
 namespace BuildingBlocks.Shared.Configuration;
 
@@ -15,10 +16,7 @@ public static class SharedConfiguration
     public static IServiceCollection AddShared(
         this IServiceCollection services)
     {
-        // Shared utilities and cross-cutting services
-        // Currently, shared layer contains constants, utilities, and responses
-        // Add shared services as needed:
-        // services.AddScoped<ISharedService, SharedService>();
+        services.AddSingleton<JwtToken>();
 
         return services;
     }

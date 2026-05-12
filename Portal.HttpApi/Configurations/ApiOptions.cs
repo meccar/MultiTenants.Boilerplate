@@ -10,10 +10,12 @@ public class ApiOptions
     /// <summary>
     /// API version (e.g. "v1", "v2"). Used in the base path and Swagger doc.
     /// </summary>
-    public string Version { get; set; } = "v1";
+    public string Version { get; set; }
 
     /// <summary>
     /// Base path for all API routes, e.g. "/api/v1". Derived from Version when not set.
     /// </summary>
-    public string BasePath => string.IsNullOrEmpty(Version) ? "/api" : $"/api/{Version.Trim('/')}";
+    public string BasePath => string.IsNullOrWhiteSpace(Version)
+        ? "/api"
+        : $"/api/{Version.Trim('/')}";
 }

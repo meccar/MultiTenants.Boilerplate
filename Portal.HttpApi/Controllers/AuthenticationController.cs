@@ -1,6 +1,6 @@
-using BuildingBlocks.Attributes;
 using BuildingBlocks.Shared.Dtos.Authentication;
 using BuildingBlocks.Shared.Dtos.UserAccount;
+using Host.Attributes;
 using Identity.Application.Commands.ChangePassword;
 using Identity.Application.Commands.CreateUserAccount;
 using Identity.Application.Commands.ForgotPassword;
@@ -12,7 +12,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BuildingBlocks.Controllers;
+namespace Host.Controllers;
 
 [ApiController]
 //[ApiVersion("1.0")]
@@ -37,7 +37,8 @@ public class AuthenticationController
     }
 
     [HttpPost("CreateUserAccount")]
-    [RequirePermission("Account:CreateUserAccount")]
+    [AllowAnonymous]
+    //[RequirePermission("Account:CreateUserAccount")]
     //[ApiValidationFilter]
     public async Task<ActionResult> CreateUserAccount(
         [FromBody] CreateUserAccountDto createUserAccountDto)

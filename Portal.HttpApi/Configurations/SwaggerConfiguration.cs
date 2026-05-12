@@ -1,4 +1,5 @@
 using BuildingBlocks.Shared.Helpers;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.OpenApi;
 
 namespace Host.Configurations;
@@ -15,25 +16,21 @@ public static class SwaggerConfiguration
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        var apiOptions = configuration.GetSection<ApiOptions>("Api");
         services.AddControllers();
         services.AddEndpointsApiExplorer();
-        var apiVersion = configuration.GetRequiredValue("Api:Version");
         services.AddSwaggerGen(c =>
         {
-            c.SwaggerDoc(apiVersion, new OpenApiInfo
+            c.SwaggerDoc(apiOptions.Version, new OpenApiInfo
             {
                 Title = "Multi-Tenant API",
-                Version = apiVersion,
+                Version = apiOptions.Version,
                 Description = "Multi-tenant API with CQRS, MongoDB, and OAuth"
             });
 
             // Add security definition for OAuth
             // OAuth URLs can be overridden via configuration: Authentication:Google:AuthorizationUrl and Authentication:Google:TokenUrl
-            var authorizationUrl = ConfigurationHelper.GetRequiredValue(
-                    configuration, "Authentication:Google:AuthorizationUrl");
-            
-            var tokenUrl = ConfigurationHelper.GetRequiredValue(
-                    configuration, "Authentication:Google:TokenUrl");
+            var googleOptions = configuration.GetSection<GoogleOptions>("Authentication:Google");
 
             c.AddSecurityDefinition("Google", new OpenApiSecurityScheme
             {
@@ -42,8 +39,8 @@ public static class SwaggerConfiguration
                 {
                     AuthorizationCode = new OpenApiOAuthFlow
                     {
-                        AuthorizationUrl = new Uri(authorizationUrl),
-                        TokenUrl = new Uri(tokenUrl),
+                        AuthorizationUrl = new Uri(googleOptions.AuthorizationEndpoint),
+                        TokenUrl = new Uri(googleOptions.TokenEndpoint),
                         Scopes = new Dictionary<string, string>
                         {
                             { "openid", "OpenID" },

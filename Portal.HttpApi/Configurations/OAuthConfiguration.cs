@@ -1,6 +1,6 @@
-using BuildingBlocks.Shared.Configuration;
 using BuildingBlocks.Shared.Constants;
 using BuildingBlocks.Shared.Helpers;
+using Microsoft.AspNetCore.Authentication.Google;
 
 namespace Host.Configurations;
 
@@ -16,7 +16,7 @@ public static class OAuthConfiguration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var googleOption = configuration.GetSection<GoogleOptions>("Google");
+        var googleOption = configuration.GetSection<GoogleOptions>("Authentication:Google");
         
         services.AddAuthentication()
             .AddGoogle(AuthConstants.GoogleScheme, options =>
