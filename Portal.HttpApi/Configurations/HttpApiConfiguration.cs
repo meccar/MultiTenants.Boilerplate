@@ -1,3 +1,5 @@
+using BuildingBlocks.Shared.Helpers;
+
 namespace Host.Configurations;
 
 /// <summary>
@@ -18,31 +20,18 @@ public static class HttpApiConfiguration
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // API version and base path (from Api:Version in appsettings)
-        services.Configure<ApiOptions>(configuration.GetSection(ApiOptions.SectionName));
-
-        // API Documentation
+        var apiOptions = configuration.GetSection<ApiOptions>(ApiOptions.SectionName);
+        services.Configure<ApiOptions>(options =>
+        {
+            options.Version = apiOptions.Version;
+        });
         services.AddSwaggerConfiguration(configuration);
-
-        // Cross-Origin Resource Sharing
         services.AddCorsConfiguration(configuration);
-
-        // Rate Limiting
         services.AddRateLimitingConfiguration(configuration);
-
-        // Health Checks
         services.AddHealthCheckConfiguration(configuration);
-
-        // OAuth
-        // services.AddOAuthConfiguration(configuration);
-
-        // Multi-Tenancy
         services.AddMultiTenantConfiguration();
-
-        // Authorization
+        services.AddAuthenticationConfiguration(configuration);
         services.AddAuthorizationConfiguration();
-
-        // Carter Endpoints
         services.AddCarterConfiguration();
 
         return services;

@@ -1,7 +1,7 @@
 ﻿using Tenancy.Domain.Interfaces;
 using Tenancy.Domain.Models;
 
-namespace BuildingBlocks.Middlewares
+namespace Host.Middlewares
 {
     public class TenantMiddleware
     {

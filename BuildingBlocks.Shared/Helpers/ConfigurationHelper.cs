@@ -3,16 +3,26 @@
 namespace BuildingBlocks.Shared.Helpers;
 public static class ConfigurationHelper
 {
-    /// <summary>
-    /// Returns the named connection string or throws InvalidOperationException when the value is null, empty, or whitespace.
-    /// </summary>
     public static string GetRequiredValue(
         this IConfiguration configuration, string name)
     {
-        var value = configuration.GetConnectionString(name);
-        if (string.IsNullOrEmpty(value))
+        var value = configuration[name];
+        if (string.IsNullOrWhiteSpace(value))
             throw new InvalidOperationException(
                 $"Configuration value for '{name}' is required but was not found.");
+        return value;
+    }
+
+    /// <summary>
+    /// Returns the named connection string or throws InvalidOperationException when the value is null, empty, or whitespace.
+    /// </summary>
+    public static string GetRequiredConnectionString(
+        this IConfiguration configuration, string name)
+    {
+        var value = configuration.GetConnectionString(name);
+        if (string.IsNullOrWhiteSpace(value))
+            throw new InvalidOperationException(
+                $"Connection string for '{name}' is required but was not found.");
         return value;
     }
     

@@ -1,5 +1,6 @@
 using Identity.Domain.Interfaces;
 using Identity.Infrastructure.Persistance.Repositories;
+using BuildingBlocks.Core.Seedwork.Interface;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,6 +21,7 @@ public static class RepositoryConfiguration
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IRolePolicyRepository, RolePolicyRepository>();
         services.AddScoped<IUserGroupRepository, UserGroupRepository>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         return services;
     }

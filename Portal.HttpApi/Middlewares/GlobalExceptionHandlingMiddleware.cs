@@ -1,8 +1,7 @@
 ﻿using BuildingBlocks.Shared.Constants;
 using BuildingBlocks.Shared.Responses;
-using System;
 
-namespace BuildingBlocks.Middlewares;
+namespace Host.Middlewares;
 public class GlobalExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;

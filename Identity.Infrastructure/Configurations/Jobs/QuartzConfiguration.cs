@@ -1,5 +1,6 @@
 using Identity.Domain.Interfaces;
 using Identity.Infrastructure.Jobs;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Quartz;
 
@@ -27,6 +28,7 @@ public static class QuartzConfiguration
 
         services.AddScoped<IJobEnqueuer, QuartzJobEnqueuer>();
         services.AddScoped<IPasswordResetEmailJob, PasswordResetEmailJob>();
+        services.AddTransient<IEmailSender, LoggingEmailSender>();
         services.AddTransient<SendPasswordResetEmailQuartzJob>();
         
         return services;

@@ -17,7 +17,6 @@ namespace Identity.Application
         {
             services.AddScoped<ICurrentUser, CurrentUserService>();
             services.AddScoped<IPermissionService, PermissionService>();
-            
             services.AddAutoMapper(option =>
             {
                 option.CreateMap<UsersEntity, IdentityUser>();

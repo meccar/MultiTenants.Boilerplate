@@ -11,18 +11,18 @@ public class ChangePasswordByOwnerCommandHandler
     : IRequestHandler<ChangePasswordByOwnerCommand, Result>
 {
     private readonly UserManager<UsersEntity> _userManager;
-    private readonly IUserPasswordStore<UsersEntity> _passwordStore;
+    private readonly IUserStore<UsersEntity> _userStore;
     private readonly IPasswordHasher<UsersEntity> _passwordHasher;
-    private readonly ILogger<ChangeLoggedInUserPasswordCommandHandler> _logger;
+    private readonly ILogger<ChangePasswordByOwnerCommandHandler> _logger;
 
     public ChangePasswordByOwnerCommandHandler(
         UserManager<UsersEntity> userManager,
-        IUserPasswordStore<UsersEntity> passwordStore,
+        IUserStore<UsersEntity> userStore,
         IPasswordHasher<UsersEntity> passwordHasher,
-        ILogger<ChangeLoggedInUserPasswordCommandHandler> logger)
+        ILogger<ChangePasswordByOwnerCommandHandler> logger)
     {
         _userManager = userManager;
-        _passwordStore = passwordStore;
+        _userStore = userStore;
         _passwordHasher = passwordHasher;
         _logger = logger;
     }
@@ -49,10 +49,17 @@ public class ChangePasswordByOwnerCommandHandler
         var hash = _passwordHasher.HashPassword(
             user, request.ChangePasswordDto.NewPassword);
         
-        await _passwordStore.SetPasswordHashAsync(
+        if (_userStore is not IUserPasswordStore<UsersEntity> passwordStore)
+            return Result.Failure("User store does not support password changes");
+
+        await passwordStore.SetPasswordHashAsync(
             user,
             hash,
             cancellationToken);
+
+        var updateResult = await _userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+            return Result.Failure(string.Join("; ", updateResult.Errors.Select(error => error.Description)));
 
         _logger.LogInformation("Password changed successfully for user {UserId}", 
             user.Id);

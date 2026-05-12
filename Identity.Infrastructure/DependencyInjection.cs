@@ -14,7 +14,6 @@ namespace Identity.Infrastructure
         )
         {
             services.AddIdentityConfiguration(configuration);
-            services.AddJwtConfiguration(configuration);
             services.AddRepositoryConfiguration(configuration);
             services.AddQuartzInfrastructure();
             
