@@ -1,4 +1,5 @@
 ﻿using Identity.Application.Services;
+using Identity.Application.Behaviors;
 using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
 using MediatR;
@@ -17,6 +18,7 @@ namespace Identity.Application
         {
             services.AddScoped<ICurrentUser, CurrentUserService>();
             services.AddScoped<IPermissionService, PermissionService>();
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             services.AddAutoMapper(option =>
             {
                 option.CreateMap<UsersEntity, IdentityUser>();

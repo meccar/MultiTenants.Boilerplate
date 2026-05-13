@@ -17,10 +17,17 @@ public static class IdentityConfiguration
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("IdentityDb");
+        if (string.IsNullOrWhiteSpace(connectionString))
+            connectionString = configuration.GetConnectionString("PostgreSQL");
+
+        if (string.IsNullOrWhiteSpace(connectionString))
+            throw new InvalidOperationException(
+                "Identity database connection string is required. Set ConnectionStrings:IdentityDb or ConnectionStrings:PostgreSQL.");
+
         // Own DbContext
         services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(
-                configuration.GetConnectionString("IdentityDb")));
+            options.UseNpgsql(connectionString));
 
         // ASP.NET Identity
         services.AddIdentity<UsersEntity, RolesEntity>(options =>

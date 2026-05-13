@@ -76,6 +76,7 @@ public class GlobalExceptionHandlingMiddleware
         }
 
         response.StatusCode = (System.Net.HttpStatusCode)ctx.Response.StatusCode;
+        response.TraceId = ctx.TraceIdentifier;
         return ctx.Response.WriteAsJsonAsync(response);
     }
 }

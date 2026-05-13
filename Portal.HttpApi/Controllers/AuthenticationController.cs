@@ -45,7 +45,6 @@ public class AuthenticationController
     {
         _logger.LogInformation($"START: {nameof(CreateUserAccount)}");
 
-        
         var result = await _mediator.Send(
             new CreateUserAccountCommand(
                 createUserAccountDto));
