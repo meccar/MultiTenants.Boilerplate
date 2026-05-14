@@ -1,10 +1,7 @@
-﻿ARG DOTNET_VERSION=10.0
-ARG APP_UID=10000
+ARG DOTNET_VERSION=10.0
 ARG BUILD_CONFIGURATION=Release
 
 FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION} AS base
-ARG APP_UID
-RUN groupadd -r appuser && useradd -r -u ${APP_UID} -g appuser appuser
 WORKDIR /app
 EXPOSE 8080
 
@@ -12,30 +9,25 @@ FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS build
 ARG BUILD_CONFIGURATION
 WORKDIR /src
 
-# Copy solution and project files
-COPY ["BuildingBlocks.sln", "."]
+COPY ["MultiTenants.Boilerplate.sln", "."]
+COPY ["BuildingBlocks.Core/BuildingBlocks.Core.csproj", "BuildingBlocks.Core/"]
 COPY ["BuildingBlocks.Shared/BuildingBlocks.Shared.csproj", "BuildingBlocks.Shared/"]
-COPY ["BuildingBlocks.Domain/BuildingBlocks.Domain.csproj", "BuildingBlocks.Domain/"]
-COPY ["BuildingBlocks.Application/BuildingBlocks.Application.csproj", "BuildingBlocks.Application/"]
-COPY ["BuildingBlocks.HttpApi/BuildingBlocks.HttpApi.csproj", "BuildingBlocks.HttpApi/"]
+COPY ["Identity.Domain/Identity.Domain.csproj", "Identity.Domain/"]
+COPY ["Identity.Application/Identity.Application.csproj", "Identity.Application/"]
+COPY ["Identity.Infrastructure/Identity.Infrastructure.csproj", "Identity.Infrastructure/"]
+COPY ["Tenancy.Domain/Tenancy.Domain.csproj", "Tenancy.Domain/"]
+COPY ["Portal.HttpApi/Portal.HttpApi.csproj", "Portal.HttpApi/"]
 
-# Restore dependencies
-RUN dotnet restore "BuildingBlocks.sln"
+RUN dotnet restore "Portal.HttpApi/Portal.HttpApi.csproj"
 
-# Copy all source files
 COPY . .
-
-# Build the project
-WORKDIR "/src/BuildingBlocks.HttpApi"
-RUN dotnet build "./BuildingBlocks.HttpApi.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-FROM build AS publish
-ARG BUILD_CONFIGURATION
-RUN dotnet publish "./BuildingBlocks.HttpApi.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+WORKDIR "/src/Portal.HttpApi"
+RUN dotnet publish "Portal.HttpApi.csproj" \
+    -c "$BUILD_CONFIGURATION" \
+    -o /app/publish \
+    /p:UseAppHost=false
 
 FROM base AS final
-# Use COPY --chown for better performance instead of separate chown command
-# This sets ownership during copy, avoiding an additional filesystem operation
-COPY --from=publish --chown=appuser:appuser /app/publish .
-USER appuser
-ENTRYPOINT ["dotnet", "BuildingBlocks.HttpApi.dll"]
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "Portal.HttpApi.dll"]
