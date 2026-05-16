@@ -39,6 +39,7 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+app.UseGlobalExceptionHandling();
 
 if (app.Environment.IsDevelopment())
 {
@@ -59,7 +60,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseGlobalExceptionHandling();
 app.UseCors("AllowConfiguredOrigins");
 app.UseRateLimiter();
 

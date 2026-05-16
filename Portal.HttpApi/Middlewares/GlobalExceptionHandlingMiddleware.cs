@@ -1,4 +1,5 @@
 ﻿using BuildingBlocks.Shared.Constants;
+using BuildingBlocks.Shared.Exceptions;
 using BuildingBlocks.Shared.Responses;
 
 namespace Host.Middlewares;
@@ -36,6 +37,13 @@ public class GlobalExceptionHandlingMiddleware
 
         switch(ex)
         {
+            case BadRequetException badRequetException:
+                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+                response = ApiResponse<object>.BadRequest(
+                    message: badRequetException.Message
+                );
+                response.Errors = badRequetException.Errors;
+                break;
             case ArgumentNullException:
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 response = ApiResponse<object>.BadRequest(

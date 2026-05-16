@@ -51,7 +51,7 @@ public class AuthenticationController
 
         _logger.LogInformation($"END: {nameof(CreateUserAccount)}");
 
-        return Created();
+        return Accepted(result);
     }
 
     [HttpPost("Login")]
