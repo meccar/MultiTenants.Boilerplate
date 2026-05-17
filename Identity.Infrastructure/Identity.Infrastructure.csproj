@@ -21,4 +21,8 @@
 	    <ProjectReference Include="..\BuildingBlocks.Core\BuildingBlocks.Core.csproj" />
 	    <ProjectReference Include="..\BuildingBlocks.Shared\BuildingBlocks.Shared.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Persistence\Migrations\" />
+    </ItemGroup>
 </Project>

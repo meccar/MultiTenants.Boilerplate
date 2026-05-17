@@ -1,8 +1,8 @@
 using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
-using Identity.Infrastructure.Persistance.Data;
+using Identity.Infrastructure.Persistence.Data;
 
-namespace Identity.Infrastructure.Persistance.Repositories;
+namespace Identity.Infrastructure.Persistence.Repositories;
 
 public class UserGroupRepository
     : RepositoryBase<UserGroupEntity, Guid>, IUserGroupRepository

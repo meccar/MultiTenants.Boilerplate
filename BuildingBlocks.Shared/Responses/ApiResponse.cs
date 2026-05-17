@@ -9,7 +9,7 @@ public class ApiResponse<T>
     public string? Message { get; set; }
     public T? Data { get; set; }
     public Dictionary<string, string[]>? Errors { get; set; }
-    public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+    public long Timestamp { get; set; } = DateTime.Now.Ticks;
     public string? TraceId { get; set; }
     public ApiResponse() {}
     public ApiResponse(

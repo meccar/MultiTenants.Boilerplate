@@ -1,10 +1,10 @@
 using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
-using Identity.Infrastructure.Persistance.Data;
+using Identity.Infrastructure.Persistence.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace Identity.Infrastructure.Persistance.Repositories;
+namespace Identity.Infrastructure.Persistence.Repositories;
 
 public class PermissionsRepository
     : RepositoryBase<PermissionsEntity, Guid>

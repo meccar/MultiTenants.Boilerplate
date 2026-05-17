@@ -1,4 +1,5 @@
 using BuildingBlocks.Shared.Helpers;
+using Host.Filters;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.OpenApi;
 
@@ -17,7 +18,10 @@ public static class SwaggerConfiguration
         IConfiguration configuration)
     {
         var apiOptions = configuration.GetSection<ApiOptions>("Api");
-        services.AddControllers();
+        services.AddControllers(options =>
+        {
+            options.Filters.Add<ApiResponseFilter>(); 
+        });
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
         {

@@ -1,5 +1,5 @@
 ﻿namespace BuildingBlocks.Core.Seedwork.DomainEvent;
 public abstract record DomainEvent(Guid Id) : IDomainEvent
 {
-    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
+    public long OccurredOn { get; init; } = DateTime.Now.Ticks;
 }

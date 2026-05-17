@@ -2,7 +2,7 @@ using Identity.Application.Handlers.PermissionRequirement;
 using Identity.Application.Services;
 using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
-using Identity.Infrastructure.Persistance.Data;
+using Identity.Infrastructure.Persistence.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

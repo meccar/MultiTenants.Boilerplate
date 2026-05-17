@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace Identity.Infrastructure.Persistance.Data;
+namespace Identity.Infrastructure.Persistence.Data;
 
 public class AppDbContext
     : IdentityDbContext<UsersEntity, RolesEntity, Guid>
 {
-    private const string SchemaName = "identity";
+    private const string SchemaName = "taf_base";
     private const string TablePrefix = "idn_";
 
     public DbSet<GroupsEntity> Groups => Set<GroupsEntity>();

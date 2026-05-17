@@ -1,10 +1,10 @@
 using System.Linq.Expressions;
 using BuildingBlocks.Core.Seedwork.Interface;
-using Identity.Infrastructure.Persistance.Data;
+using Identity.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 
-namespace Identity.Infrastructure.Persistance.Repositories;
+namespace Identity.Infrastructure.Persistence.Repositories;
 
 public class RepositoryBase<TEntity, TKey> 
     : IRepositoryBase<TEntity, TKey> where TEntity : class
@@ -108,7 +108,7 @@ public class RepositoryBase<TEntity, TKey>
     {
         var softDeletable = GetSoftDeletableOrThrow(entity);
         softDeletable.IsDeleted = true;
-        softDeletable.DeletedAt = DateTime.UtcNow;
+        softDeletable.DeletedAt = DateTime.Now.Ticks;
         _context.Set<TEntity>().Update(entity);
         return Task.CompletedTask;
     }

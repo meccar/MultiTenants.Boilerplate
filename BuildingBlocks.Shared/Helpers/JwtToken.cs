@@ -62,7 +62,7 @@ public class JwtToken
                 _signingKey,
                 SecurityAlgorithms.HmacSha256);
 
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             var token = new JwtSecurityToken(
                 issuer: _jwt.Issuer,
                 audience: _jwt.Audience,
@@ -157,7 +157,7 @@ public sealed class TokenValidationResult
     public string? Username { get; init; }
     public string? TenantId { get; init; }
     public IReadOnlyList<string> Roles { get; init; } = [];
-    public DateTime? ExpiresAt { get; init; }
+    public long? ExpiresAt { get; init; }
 
     public static TokenValidationResult Success(JwtSecurityToken jwt) => new()
     {
@@ -166,7 +166,7 @@ public sealed class TokenValidationResult
         Username = jwt.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.UniqueName)?.Value,
         TenantId = jwt.Claims.FirstOrDefault(c => c.Type == "tenant_id")?.Value,
         Roles = jwt.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList(),
-        ExpiresAt = jwt.ValidTo == DateTime.MinValue ? null : jwt.ValidTo,
+        ExpiresAt = jwt.ValidTo == DateTime.MinValue ? null : jwt.ValidTo.Ticks,
     };
 
     public static TokenValidationResult Failure(string error) => new()

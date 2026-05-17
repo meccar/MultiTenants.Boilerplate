@@ -1,6 +1,6 @@
 using Identity.Domain.Interfaces;
-using Identity.Infrastructure.Persistance.Repositories;
 using BuildingBlocks.Core.Seedwork.Interface;
+using Identity.Infrastructure.Persistence.Repositories;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

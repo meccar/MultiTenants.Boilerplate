@@ -1,9 +1,9 @@
 ﻿using BuildingBlocks.Core.Seedwork.Interface;
 using Identity.Domain.Entities;
-using Identity.Infrastructure.Persistance.Data;
+using Identity.Infrastructure.Persistence.Data;
 using Microsoft.AspNetCore.Identity;
 
-namespace Identity.Infrastructure.Persistance.Repositories
+namespace Identity.Infrastructure.Persistence.Repositories
 {
     public class UnitOfWork : IUnitOfWork
     {

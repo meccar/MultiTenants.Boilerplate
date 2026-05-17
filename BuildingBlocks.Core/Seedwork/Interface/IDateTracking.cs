@@ -1,6 +1,6 @@
 ﻿namespace BuildingBlocks.Core.Seedwork.Interface;
 public interface IDateTracking
 {
-    DateTime CreatedAt { get; set; }
-    DateTime? UpdatedAt { get; set; }
+    long CreatedAt { get; set; }
+    long? UpdatedAt { get; set; }
 }
