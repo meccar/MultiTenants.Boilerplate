@@ -1,3 +1,4 @@
+using BuildingBlocks.Shared.Exceptions;
 using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
 using Microsoft.AspNetCore.Identity;
@@ -35,18 +36,15 @@ public class PermissionService
             return cached;
         
         var user = await _userManager.FindByIdAsync(userId.ToString())
-                   ?? throw new UnauthorizedAccessException("User not found");
+                   ?? throw new UnauthorizedException();
 
-        // Roles assigned to this user
         var roles = await _userManager.GetRolesAsync(user);
 
-        // 1. Permissions from user claims directly (AspNetUserClaims)
         var userClaims = await _userManager.GetClaimsAsync(user);
         var userPermissions = userClaims
             .Where(c => c.Type == "permission")
             .Select(c => c.Value);
 
-        // 2. Permissions from each role's claims (AspNetRoleClaims)
         var rolePermissions = new List<string>();
         foreach (var roleName in roles)
         {

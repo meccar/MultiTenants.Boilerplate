@@ -1,3 +1,4 @@
+using BuildingBlocks.Shared.Exceptions;
 using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -25,7 +26,7 @@ public class ConfirmEmailCommandHandler
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedException();
         
         var result = await _userManager.ConfirmEmailAsync(user, request.Token);
 

@@ -10,6 +10,8 @@ using Identity.Infrastructure;
 using Identity.Domain;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using BuildingBlocks.Core.Abstractions;
+using Identity.Infrastructure.Persistence.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +21,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddShared();
 builder.Services.AddMediatR(configuration =>
     configuration.RegisterServicesFromAssembly(Identity.Application.AssemblyReference.Assembly));
+
 builder.Services.ConfigureIdentityApplicationDependencyInjection(builder.Configuration);
 builder.Services.ConfigureIdentityInfrastructureDependencyInjection(builder.Configuration);
 builder.Services.ConfigureTenancyDomainDependencyInjection(builder.Configuration);
@@ -37,6 +40,7 @@ builder.Services.AddCors(options =>
             .AllowAnyHeader();
     });
 });
+builder.Services.AddScoped<AppDbSeeder>();
 
 var app = builder.Build();
 app.UseGlobalExceptionHandling();
@@ -68,10 +72,17 @@ app.UseMultiTenant();
 app.UseAuthentication();
 app.UseAuthorization();
 
-//app.UseMiddleware<TenantMiddleware>();
-
 app.MapControllers();
 app.MapCarter();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await db.Database.MigrateAsync();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<AppDbSeeder>();
+    await seeder.SeedAsync();
+}
 
 app.MapHealthChecks("/health", new HealthCheckOptions
 {

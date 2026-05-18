@@ -8,6 +8,7 @@ using Identity.Application.Commands.Login;
 using Identity.Application.Commands.Logout;
 using Identity.Application.Commands.ResetPassword;
 using Identity.Domain.Extensions;
+using Identity.Domain.Model;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,17 +38,16 @@ public class AuthenticationController
     }
 
     [HttpPost("CreateUserAccount")]
-    [AllowAnonymous]
-    //[RequirePermission("Account:CreateUserAccount")]
-    //[ApiValidationFilter]
+    [RequirePermission("Account:CreateUserAccount")]
     public async Task<ActionResult> CreateUserAccount(
         [FromBody] CreateUserAccountDto createUserAccountDto)
     {
         _logger.LogInformation($"START: {nameof(CreateUserAccount)}");
 
+        CurrentUserModel currentUser = _httpContextAccessor.HttpContext!.GetCurrentUser();
         var result = await _mediator.Send(
             new CreateUserAccountCommand(
-                createUserAccountDto));
+                createUserAccountDto, currentUser));
 
         _logger.LogInformation($"END: {nameof(CreateUserAccount)}");
 

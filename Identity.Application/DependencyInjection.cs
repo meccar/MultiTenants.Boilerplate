@@ -1,8 +1,10 @@
 ﻿using Identity.Application.Services;
 using Identity.Application.Behaviors;
+using Identity.Application.Providers;
 using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +18,7 @@ namespace Identity.Application
             IConfiguration configuration
         )
         {
+            services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
             services.AddScoped<ICurrentUser, CurrentUserService>();
             services.AddScoped<IPermissionService, PermissionService>();
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));

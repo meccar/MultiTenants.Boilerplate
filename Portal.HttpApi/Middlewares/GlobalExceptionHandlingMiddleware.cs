@@ -44,6 +44,13 @@ public class GlobalExceptionHandlingMiddleware
                 );
                 response.Errors = badRequetException.Errors;
                 break;
+            case UnauthorizedException unauthorizedException:
+                ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
+                response = ApiResponse<object>.Unauthorized(
+                    message: unauthorizedException.Message
+                );
+                response.Errors = unauthorizedException.Errors;
+                break;
             case ArgumentNullException:
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 response = ApiResponse<object>.BadRequest(

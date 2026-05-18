@@ -3,7 +3,6 @@ using BuildingBlocks.Shared.Exceptions;
 using Identity.Application.Helpers;
 using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
-using Tenancy.Domain.Interfaces;
 
 namespace Identity.Application.Commands.CreateUserAccount;
 
@@ -11,24 +10,18 @@ public class CreateUserAccountCommandHandler
     : TransactionalCommandHandler<CreateUserAccountCommand, IdentityResult>
 {
     private readonly UserManager<UsersEntity> _userManager;
-    private readonly ITenant _tenant;
 
     public CreateUserAccountCommandHandler(
         UserManager<UsersEntity> userManager,
-        IUnitOfWork unitOfWork,
-        ITenant tenant
+        IUnitOfWork unitOfWork
     ) : base(unitOfWork)
     {
         _userManager = userManager;
-        _tenant = tenant;
     }
 
     protected override async Task<IdentityResult> HandleCommandAsync(
         CreateUserAccountCommand request, CancellationToken cancellationToken)
     {
-        // if (string.IsNullOrEmpty(_tenant.TenantId))
-            //throw new InvalidOperationException("Tenant context not available");
-
         var user = new UsersEntity
         {
             UserName = request.Email,

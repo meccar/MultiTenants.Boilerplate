@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using BuildingBlocks.Shared.Exceptions;
 using Identity.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 
@@ -17,7 +18,7 @@ public class CurrentUserService : ICurrentUser
 
     public Guid UserId => Guid.Parse(
         Principal!.FindFirstValue(ClaimTypes.NameIdentifier)
-        ?? throw new UnauthorizedAccessException("No user in context"));
+        ?? throw new UnauthorizedException());
 
     public string Email =>
         Principal!.FindFirstValue(ClaimTypes.Email) ?? string.Empty;

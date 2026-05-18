@@ -1,6 +1,7 @@
 using System.Text;
 using BuildingBlocks.Shared.Configuration;
 using BuildingBlocks.Shared.Helpers;
+using BuildingBlocks.Shared.Responses;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -33,6 +34,21 @@ public static class AuthenticationConfiguration
                     ValidAudience = jwt.Audience,
                     ValidateLifetime = true,
                     ClockSkew = TimeSpan.Zero
+                };
+                options.Events = new JwtBearerEvents
+                {
+                    OnChallenge = async context =>
+                    {
+                        context.HandleResponse();
+                        await context.Response.WriteAsJsonAsync(
+                            ApiResponse<object>.Unauthorized());
+                    },
+                    OnForbidden = async context =>
+                    {
+                        await context.Response.WriteAsJsonAsync(
+                            ApiResponse<object>.FailureResponse()
+                        );
+                    }
                 };
             });
 

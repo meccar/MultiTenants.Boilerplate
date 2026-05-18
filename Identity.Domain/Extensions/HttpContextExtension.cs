@@ -1,4 +1,5 @@
 using BuildingBlocks.Shared.Constants;
+using BuildingBlocks.Shared.Exceptions;
 using Identity.Domain.Model;
 using Microsoft.AspNetCore.Http;
 
@@ -12,7 +13,7 @@ public static class HttpContextExtension
             && value is CurrentUserModel currentUser)
             return currentUser;
 
-        throw new UnauthorizedAccessException();
+        throw new UnauthorizedException();
     }
 
     public static CurrentUserModel? TryGetCurrentUser(this HttpContext context)

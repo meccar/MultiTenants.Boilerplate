@@ -1,4 +1,5 @@
 using System.Text.Json;
+using BuildingBlocks.Shared.Exceptions;
 using Identity.Application.Mapper;
 using BuildingBlocks.Shared.Helpers;
 using Identity.Domain.Interfaces;
@@ -41,16 +42,16 @@ public class GetUserPermissionsQueryHandler
     {
         var token = ResolveToken();
         if (string.IsNullOrWhiteSpace(token))
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedException();
 
         var validateTokenResult = _jwtToken.ValidateToken(token);
         if (!validateTokenResult.IsValid)
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedException();
 
         var user = await _userManager
             .FindByEmailAsync(validateTokenResult.Username!);
         if (user == null)
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedException();
 
         var userRoleNames = await _userManager.GetRolesAsync(user);
 

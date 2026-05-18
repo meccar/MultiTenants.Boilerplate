@@ -1,4 +1,5 @@
 using BuildingBlocks.Shared.Constants;
+using BuildingBlocks.Shared.Exceptions;
 using Identity.Application.Queries.GetUserPermissions;
 using Identity.Domain.Model;
 using MediatR;
@@ -57,7 +58,9 @@ public class PermissionAuthorizationHandler
             else
                 context.Fail();
         }
-        catch (UnauthorizedAccessException)
+        catch (Exception ex) 
+            when (ex is UnauthorizedAccessException 
+                      or UnauthorizedException)
         {
             context.Fail();
         }

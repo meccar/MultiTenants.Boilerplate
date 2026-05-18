@@ -1,3 +1,4 @@
+using BuildingBlocks.Shared.Exceptions;
 using BuildingBlocks.Shared.Utilities;
 using Identity.Domain.Entities;
 using MediatR;
@@ -33,7 +34,7 @@ public class ResendEmailConfirmationCommandHandler : IRequestHandler<ResendEmail
     {
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            throw new UnauthorizedAccessException();
+            throw new UnauthorizedException();
         
         var tokenResult = await _userManager.GenerateEmailConfirmationTokenAsync(user);
         
