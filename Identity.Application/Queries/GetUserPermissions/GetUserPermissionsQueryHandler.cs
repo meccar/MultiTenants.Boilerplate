@@ -1,6 +1,5 @@
 using System.Text.Json;
 using BuildingBlocks.Shared.Exceptions;
-using Identity.Application.Mapper;
 using BuildingBlocks.Shared.Helpers;
 using Identity.Domain.Interfaces;
 using Identity.Domain.Model;

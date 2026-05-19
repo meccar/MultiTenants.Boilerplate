@@ -64,7 +64,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowConfiguredOrigins");
 app.UseRateLimiter();
 
 app.UseMultiTenant();
