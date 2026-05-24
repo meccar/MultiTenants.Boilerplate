@@ -33,7 +33,7 @@ public class CreateUserAccountCommandHandler
                 : await _userManager.CreateAsync(user, request.Password);
 
         if (!result.Succeeded)
-            throw new BadRequetException(
+            throw new BadRequestException(
                 IdentityErrorHelper.ToErrorDictionary(result.Errors));
         
         return result;

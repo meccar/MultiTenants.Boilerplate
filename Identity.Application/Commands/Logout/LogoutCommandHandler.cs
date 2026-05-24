@@ -1,3 +1,4 @@
+using BuildingBlocks.Shared.Exceptions;
 using BuildingBlocks.Shared.Utilities;
 using Identity.Domain.Entities;
 using MediatR;
@@ -29,7 +30,7 @@ public class LogoutCommandHandler
         {
             _logger.LogError("Failed to invalidate token for user {UserId}", 
                 request.CurrentUser.User.Id);
-            return Result.Failure("Logout failed");
+            throw new BadRequestException("Logout failed");
         }
         
         _logger.LogInformation("User {UserId} signed out successfully", 

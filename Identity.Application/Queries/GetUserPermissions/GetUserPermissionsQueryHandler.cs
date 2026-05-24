@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text.Json;
 using BuildingBlocks.Shared.Exceptions;
 using BuildingBlocks.Shared.Helpers;
@@ -39,17 +40,13 @@ public class GetUserPermissionsQueryHandler
         GetUserPermissionsQuery request,
         CancellationToken cancellationToken = default)
     {
-        var token = ResolveToken();
-        if (string.IsNullOrWhiteSpace(token))
+        if (string.IsNullOrWhiteSpace(request.Username))
             throw new UnauthorizedException();
-
-        var validateTokenResult = _jwtToken.ValidateToken(token);
-        if (!validateTokenResult.IsValid)
-            throw new UnauthorizedException();
-
-        var user = await _userManager
-            .FindByEmailAsync(validateTokenResult.Username!);
-        if (user == null)
+        
+        var user = await _userManager.FindByNameAsync(request.Username)
+                   ?? await _userManager.FindByEmailAsync(request.Username);
+        
+        if (user is null)
             throw new UnauthorizedException();
 
         var userRoleNames = await _userManager.GetRolesAsync(user);

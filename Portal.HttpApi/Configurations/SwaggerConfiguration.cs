@@ -1,18 +1,11 @@
 using BuildingBlocks.Shared.Helpers;
 using Host.Filters;
-using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.OpenApi;
 
 namespace Host.Configurations;
 
-/// <summary>
-/// Configuration for Swagger/OpenAPI documentation
-/// </summary>
 public static class SwaggerConfiguration
 {
-    /// <summary>
-    /// Adds Swagger/OpenAPI services to the service collection
-    /// </summary>
     public static IServiceCollection AddSwaggerConfiguration(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -20,7 +13,7 @@ public static class SwaggerConfiguration
         var apiOptions = configuration.GetSection<ApiOptions>("Api");
         services.AddControllers(options =>
         {
-            options.Filters.Add<ApiResponseFilter>(); 
+            options.Filters.Add<ApiResponseFilter>();
         });
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen(c =>
@@ -32,10 +25,25 @@ public static class SwaggerConfiguration
                 Description = "Multi-tenant API with CQRS, MongoDB, and OAuth"
             });
 
-            // Add security definition for OAuth
-            // OAuth URLs can be overridden via configuration: Authentication:Google:AuthorizationUrl and Authentication:Google:TokenUrl
-            var googleOptions = configuration.GetSection<GoogleOptions>("Authentication:Google");
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                In = ParameterLocation.Header,
+                Description = "Enter your JWT token. The 'Bearer ' prefix is added automatically."
+            });
 
+            c.AddSecurityRequirement(doc => new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecuritySchemeReference("Bearer", doc),
+                    []
+                }
+            });
+
+            var googleOptions = configuration.GetSection<GoogleOptions>("Authentication:Google");
             c.AddSecurityDefinition("Google", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.OAuth2,

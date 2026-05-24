@@ -1,6 +1,7 @@
-using BuildingBlocks.Shared.Constants.Errors;
+using BuildingBlocks.Shared.Dtos.Authentication;
+using BuildingBlocks.Shared.Exceptions;
 using BuildingBlocks.Shared.Helpers;
-using BuildingBlocks.Shared.Utilities;
+using BuildingBlocks.Shared.Models;
 using Identity.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +11,7 @@ using Tenancy.Domain.Interfaces;
 namespace Identity.Application.Commands.Login;
 
 public class LocalAuthenticationCommandHandler
-    : IRequestHandler<LocalAuthenticationCommand, Result<string>>
+    : IRequestHandler<LocalAuthenticationCommand, TokenDto>
 {
     private readonly UserManager<UsersEntity> _userManager;
     private readonly ITenant _tenant;
@@ -29,44 +30,42 @@ public class LocalAuthenticationCommandHandler
         _jwtToken = jwtToken;
     }
 
-    public async Task<Result<string>> Handle(
+    public async Task<TokenDto> Handle(
         LocalAuthenticationCommand request,
         CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(_tenant.TenantId))
-            throw new InvalidOperationException("Tenant context not available");
+        //if (string.IsNullOrEmpty(_tenant.TenantId))
+          //  throw new InvalidOperationException("Tenant context not available");
 
         var user = await _userManager.FindByNameAsync(
                        request.LoginDto.UserName)
             ?? await _userManager.FindByEmailAsync(
                 request.LoginDto.UserName);
         if (user is null)
-            return Result<string>.Failure(
-                AuthenticationErrors.InvalidCredentials);
+            throw new UnauthorizedException();
 
         var isValid = await _userManager.CheckPasswordAsync(
             user, 
             request.LoginDto.Password);
         if (!isValid)
-            return Result<string>.Failure(
-                AuthenticationErrors.InvalidCredentials);
+            throw new UnauthorizedException();
 
         var roles = await _userManager.GetRolesAsync(user);
         if (roles.Count == 0)
-            return Result<string>.Failure("User has no assigned roles");
+            throw new BadRequestException("User has no assigned roles");
 
-        var token = await _jwtToken.GenerateJwtTokenAsync(
-            user.Email, roles.ToList(), _tenant.TenantId);
-        if (string.IsNullOrEmpty(token))
-        {
-            _logger.LogError("Token generation failed for user {UserId} in tenant {TenantId}",
-                user.Id, _tenant.TenantId);
-            return Result<string>.Failure("Token generation failed");
-        }
+        var tokenRequest = new GenerateTokenRequestModel(
+            UserName: user.UserName ?? user.Email!,
+            Roles: roles.ToList(),
+            TenantId: _tenant.TenantId
+        );
+        
+        var tokenDto = await _jwtToken.GenerateJwtTokenAsync(tokenRequest);
 
-        _logger.LogInformation("User {UserId} successfully authenticated in tenant {TenantId}",
+        _logger.LogInformation(
+            "User {UserId} successfully authenticated in tenant {TenantId}",
             user.Id, _tenant.TenantId);
 
-        return Result<string>.Success(token);
+        return tokenDto;
     }
 }

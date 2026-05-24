@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using BuildingBlocks.Shared.Constants;
 using BuildingBlocks.Shared.Exceptions;
 using Identity.Application.Queries.GetUserPermissions;
@@ -5,6 +6,7 @@ using Identity.Domain.Model;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace Identity.Application.Handlers.PermissionRequirement;
 
@@ -25,42 +27,49 @@ public class PermissionAuthorizationHandler
         {
             var httpContext = context.Resource as HttpContext;
 
-            CurrentUserModel result;
+            Console.WriteLine($"Resource type: {context.Resource?.GetType().FullName}");
+            Console.WriteLine($"User authenticated: {context.User?.Identity?.IsAuthenticated}");
+            Console.WriteLine($"HttpContext User authenticated: {httpContext?.User?.Identity?.IsAuthenticated}");
+            Console.WriteLine($"Claims on context.User: {string.Join(", ", context.User?.Claims.Select(c => $"{c.Type}={c.Value}") ?? [])}");
+            Console.WriteLine($"Claims on httpContext.User: {string.Join(", ", httpContext?.User?.Claims.Select(c => $"{c.Type}={c.Value}") ?? [])}");
+            
+            var username = httpContext?.User.FindFirstValue("unique_name")
+                           ?? httpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                           ?? httpContext?.User.FindFirstValue(ClaimTypes.Name)
+                           ?? httpContext?.User.Identity?.Name;
+
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                context.Fail();
+                return;
+            }
+
             if (httpContext?.Items.TryGetValue(
                     HttpContextKeys.CurrentUser, out var cached) == true
                 && cached is CurrentUserModel cachedUser)
             {
                 var isAllowed = requirement.RequiredPermissions
                     .All(p => cachedUser.Permissions
-                        .Any(x => 
-                            x.Name.Equals(p, StringComparison.OrdinalIgnoreCase)));
+                        .Any(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase)));
 
-                if (isAllowed)
-                    context.Succeed(requirement);
-                else
-                    context.Fail();
-
+                if (isAllowed) context.Succeed(requirement);
+                else context.Fail();
                 return;
             }
-            else
-            {
-                result = await _sender.Send(new GetUserPermissionsQuery
-                {
-                    RequiredPermissions = requirement.RequiredPermissions.ToList()
-                });
 
-                if (httpContext != null)
-                    httpContext.Items[HttpContextKeys.CurrentUser] = result;
-            }
+            var result = await _sender.Send(new GetUserPermissionsQuery(
+                Username: username,
+                RequiredPermissions: requirement.RequiredPermissions.ToList()
+            ));
 
-            if (result.IsAllowed)
-                context.Succeed(requirement);
-            else
-                context.Fail();
+            if (httpContext != null)
+                httpContext.Items[HttpContextKeys.CurrentUser] = result;
+
+            if (result.IsAllowed) context.Succeed(requirement);
+            else context.Fail();
         }
-        catch (Exception ex) 
-            when (ex is UnauthorizedAccessException 
-                      or UnauthorizedException)
+        catch (Exception ex)
+            when (ex is UnauthorizedAccessException or UnauthorizedException)
         {
             context.Fail();
         }

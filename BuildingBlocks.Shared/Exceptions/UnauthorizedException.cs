@@ -9,8 +9,15 @@ public class UnauthorizedException : Exception
     public UnauthorizedException()
         : base(ResponseMessageConstants.Unauthorized)
     {
-        Errors = new Dictionary<string, string[]>();
+        Errors = [];
     }
+    
+    public UnauthorizedException(string message)
+        : base(message)
+    {
+        Errors = [];
+    }
+    
     public UnauthorizedException(
         Dictionary<string, string[]> errors)
         : base(ResponseMessageConstants.Unauthorized)

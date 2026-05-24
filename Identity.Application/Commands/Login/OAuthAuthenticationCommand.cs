@@ -10,4 +10,4 @@ namespace Identity.Application.Commands.Login;
 /// </summary>
 public record OAuthAuthenticationCommand(
     OauthLoginDto LoginDto
-) : IRequest<Result<string>>;
+) : IRequest<TokenDto>;

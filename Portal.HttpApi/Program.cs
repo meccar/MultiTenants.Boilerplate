@@ -28,18 +28,6 @@ builder.Services.ConfigureTenancyDomainDependencyInjection(builder.Configuration
 builder.Services.AddScoped<ITenantProvider, TenantProvider>();
 
 builder.Services.AddHttpApi(builder.Configuration);
-
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(
-        "AllowConfiguredOrigins", policy =>
-    {
-        policy
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader();
-    });
-});
 builder.Services.AddScoped<AppDbSeeder>();
 
 var app = builder.Build();
@@ -65,8 +53,17 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRateLimiter();
+app.UseCors("AllowConfiguredOrigins");
 
 app.UseMultiTenant();
+
+app.Use(async (context, next) =>
+{
+    Console.WriteLine($"[PIPELINE] Path: {context.Request.Path}");
+    Console.WriteLine($"[PIPELINE] Auth header: {context.Request.Headers["Authorization"]}");
+    await next();
+    Console.WriteLine($"[PIPELINE AFTER] IsAuthenticated: {context.User.Identity?.IsAuthenticated}");
+});
 
 app.UseAuthentication();
 app.UseAuthorization();

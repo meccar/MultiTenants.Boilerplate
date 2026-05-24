@@ -37,7 +37,7 @@ public class GlobalExceptionHandlingMiddleware
 
         switch(ex)
         {
-            case BadRequetException badRequetException:
+            case BadRequestException badRequetException:
                 ctx.Response.StatusCode = StatusCodes.Status400BadRequest;
                 response = ApiResponse<object>.BadRequest(
                     message: badRequetException.Message

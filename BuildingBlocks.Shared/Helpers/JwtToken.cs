@@ -1,11 +1,13 @@
-using BuildingBlocks.Shared.Dtos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using BuildingBlocks.Shared.Configuration;
+using BuildingBlocks.Shared.Dtos.Authentication;
+using BuildingBlocks.Shared.Models;
 
 namespace BuildingBlocks.Shared.Helpers;
 
@@ -27,56 +29,58 @@ public class JwtToken
         _signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwt.Secret));
     }
 
-    public Task<string> GenerateJwtTokenAsync(
-        UserDto user,
-        IList<string> roles,
-        string tenantId)
+    public Task<TokenDto> GenerateJwtTokenAsync(
+        GenerateTokenRequestModel request)
     {
-        if (user == null)
-            throw new ArgumentNullException(nameof(user));
+        ArgumentNullException.ThrowIfNull(request);
 
-        return GenerateJwtTokenAsync(user.UserName, roles, tenantId);
-    }
-
-    public Task<string> GenerateJwtTokenAsync(
-        string? userName,
-        IList<string> roles,
-        string tenantId)
-    {
         try
         {
-            if (string.IsNullOrWhiteSpace(tenantId))
-                throw new ArgumentException("Tenant ID cannot be null or empty", nameof(tenantId));
-
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.UniqueName, userName ?? string.Empty),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("tenant_id", tenantId)
+                new(JwtRegisteredClaimNames.UniqueName, request.UserName),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             };
 
-            claims.AddRange(
-                roles.Select(role => new Claim(ClaimTypes.Role, role)));
+            if (!string.IsNullOrWhiteSpace(request.TenantId))
+                claims.Add(new Claim("tenant_id", request.TenantId));
+
+            claims.AddRange(request.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var credentials = new SigningCredentials(
                 _signingKey,
                 SecurityAlgorithms.HmacSha256);
-
             var now = DateTime.Now;
-            var token = new JwtSecurityToken(
+            var accessExpiry = now.AddMinutes(_jwt.AccessExpiry);
+            var refreshExpiry = now.AddMinutes(_jwt.RefreshExpiry);
+
+            var accessKey = new JwtSecurityToken(
                 issuer: _jwt.Issuer,
                 audience: _jwt.Audience,
                 claims: claims,
                 notBefore: now,
-                expires: now.AddMinutes(_jwt.ExpirationMinutes),
+                expires: accessExpiry,
+                signingCredentials: credentials);
+            
+            var refreshKey = new JwtSecurityToken(
+                issuer: _jwt.Issuer,
+                audience: _jwt.Audience,
+                claims: claims,
+                notBefore: now,
+                expires: refreshExpiry,
                 signingCredentials: credentials);
 
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-            return Task.FromResult(tokenString);
+            var accessToken = new JwtSecurityTokenHandler().WriteToken(accessKey);
+            var refreshToken = new JwtSecurityTokenHandler().WriteToken(refreshKey);
+            
+            return Task.FromResult(new TokenDto(
+                AccessToken: accessToken,
+                RefreshToken: refreshToken
+            ));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to generate JWT token for user {UserId}", userName);
+            _logger.LogError(ex, "Failed to generate JWT token for user {UserName}", request.UserName);
             throw;
         }
     }
@@ -145,6 +149,12 @@ public class JwtToken
             _logger.LogWarning(ex, "Token validation failed");
             return TokenValidationResult.Failure("Token is invalid");
         }
+    }
+    
+    private static string GenerateRefreshToken()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(64);
+        return Convert.ToBase64String(bytes);
     }
 }
 
