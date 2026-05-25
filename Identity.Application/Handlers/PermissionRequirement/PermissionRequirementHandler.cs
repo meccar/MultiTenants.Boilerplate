@@ -26,12 +26,6 @@ public class PermissionAuthorizationHandler
         try
         {
             var httpContext = context.Resource as HttpContext;
-
-            Console.WriteLine($"Resource type: {context.Resource?.GetType().FullName}");
-            Console.WriteLine($"User authenticated: {context.User?.Identity?.IsAuthenticated}");
-            Console.WriteLine($"HttpContext User authenticated: {httpContext?.User?.Identity?.IsAuthenticated}");
-            Console.WriteLine($"Claims on context.User: {string.Join(", ", context.User?.Claims.Select(c => $"{c.Type}={c.Value}") ?? [])}");
-            Console.WriteLine($"Claims on httpContext.User: {string.Join(", ", httpContext?.User?.Claims.Select(c => $"{c.Type}={c.Value}") ?? [])}");
             
             var username = httpContext?.User.FindFirstValue("unique_name")
                            ?? httpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Sub)
