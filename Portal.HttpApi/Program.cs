@@ -31,11 +31,9 @@ builder.Services.AddHttpApi(builder.Configuration);
 builder.Services.AddScoped<AppDbSeeder>();
 
 var app = builder.Build();
-app.UseGlobalExceptionHandling();
 
 if (app.Environment.IsDevelopment())
 {
-    
     var googleClientId = app.Configuration.GetRequiredValue(
                     "Authentication:Google:ClientId");
     var apiOptions = app.Configuration.GetSection<ApiOptions>("Api");
@@ -49,20 +47,14 @@ if (app.Environment.IsDevelopment())
             c.OAuthClientId(googleClientId);
         c.OAuthUsePkce();
     });
-}
-
-if (!app.Environment.IsDevelopment())
-{
     app.UseHttpsRedirection();
 }
+app.UseGlobalExceptionHandling();
 app.UseRateLimiter();
 app.UseCors("AllowConfiguredOrigins");
-
 app.UseMultiTenant();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
 app.MapCarter();
 
