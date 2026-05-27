@@ -10,6 +10,7 @@ using Identity.Infrastructure;
 using Identity.Domain;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using BuildingBlocks.Core.Abstractions;
+using Host;
 using Identity.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,7 +26,7 @@ builder.Services.AddMediatR(configuration =>
 builder.Services.ConfigureIdentityApplicationDependencyInjection(builder.Configuration);
 builder.Services.ConfigureIdentityInfrastructureDependencyInjection(builder.Configuration);
 builder.Services.ConfigureTenancyDomainDependencyInjection(builder.Configuration);
-builder.Services.AddScoped<ITenantProvider, TenantProvider>();
+builder.Services.ConfigureHostDependencyInjection(builder.Configuration);
 
 builder.Services.AddHttpApi(builder.Configuration);
 builder.Services.AddScoped<AppDbSeeder>();
