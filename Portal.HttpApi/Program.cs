@@ -1,35 +1,22 @@
-using BuildingBlocks.Shared.Configuration;
 using BuildingBlocks.Shared.Helpers;
 using Carter;
 using Finbuckle.MultiTenant.AspNetCore.Extensions;
 using Host.Configurations;
 using Host.Middlewares;
-using Host.Services;
 using Identity.Application;
 using Identity.Infrastructure;
 using Identity.Domain;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using BuildingBlocks.Core.Abstractions;
 using Host;
 using Identity.Infrastructure.Persistence.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHttpContextAccessor();
-builder.Services.AddMemoryCache();
-
-builder.Services.AddShared();
-builder.Services.AddMediatR(configuration =>
-    configuration.RegisterServicesFromAssembly(Identity.Application.AssemblyReference.Assembly));
-
 builder.Services.ConfigureIdentityApplicationDependencyInjection(builder.Configuration);
 builder.Services.ConfigureIdentityInfrastructureDependencyInjection(builder.Configuration);
 builder.Services.ConfigureTenancyDomainDependencyInjection(builder.Configuration);
 builder.Services.ConfigureHostDependencyInjection(builder.Configuration);
-
-builder.Services.AddHttpApi(builder.Configuration);
-builder.Services.AddScoped<AppDbSeeder>();
 
 var app = builder.Build();
 
