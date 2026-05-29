@@ -15,4 +15,13 @@ public static class Resources
     public const string Session = "Session";
     public const string Notification = "Notification";
     public const string Feature = "Feature";
+    public const string Group = "Group";
+    public const string Invitation = "Invitation";
+    public const string Webhook = "Webhook";
+    public const string ServiceAccount = "ServiceAccount";
+    public const string MfaSettings = "MfaSettings";
+    public const string LoginHistory = "LoginHistory";
+    public const string BillingAccount = "BillingAccount";
+    public const string TenantSettings = "TenantSettings";
+    public const string SsoProvider = "SsoProvider";
 }
