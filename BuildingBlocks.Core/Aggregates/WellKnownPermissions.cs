@@ -7,9 +7,9 @@ public static class WellKnownPermissions
     public static readonly IReadOnlyList<string> SuperAdmin = new[]
     {
         UserAccountPermissions.Manage,
-        TenantPermissions.Manage,
         RolePermissions.Manage,
         PolicyPermissions.Manage,
+        TenantPermissions.Manage,
         AuditLogPermissions.Export,
         AuditLogPermissions.Purge,
         ServiceAccountPermissions.Manage,

@@ -1,3 +1,4 @@
+using BuildingBlocks.Core.Aggregates;
 using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,8 @@ namespace Identity.Infrastructure.Persistence.Data;
 
 public class AppDbSeeder
 {
+    private const string SuperAdmin = nameof(WellKnownPermissions.SuperAdmin);
+
     private readonly AppDbContext _db;
     private readonly UserManager<UsersEntity> _userManager;
     private readonly RoleManager<RolesEntity> _roleManager;
@@ -32,7 +35,7 @@ public class AppDbSeeder
 
     private async Task SeedRolesAsync()
     {
-        var roles = new[] { "Admin", "Viewer", "Editor" };
+        var roles = new[] { SuperAdmin };
 
         foreach (var name in roles)
         {
@@ -51,48 +54,38 @@ public class AppDbSeeder
 
     private async Task SeedPermissionsAsync()
     {
-        if (await _db.Permissions.AnyAsync())
+        var existingPermissionNames = await _db.Permissions
+            .Select(permission => permission.Name)
+            .ToListAsync();
+
+        var permissions = WellKnownPermissions.SuperAdmin
+            .Where(permission => !existingPermissionNames.Contains(permission))
+            .Select(CreatePermissionEntity)
+            .ToList();
+
+        if (permissions.Count == 0)
             return;
 
-        _db.Permissions.AddRange(
-            new PermissionsEntity
-            {
-                Id = Guid.NewGuid(),
-                Name = "View Users",
-                Resource = "users",
-                Action = "read",
-                Description = "Allows reading user records"
-            },
-            new PermissionsEntity
-            {
-                Id = Guid.NewGuid(),
-                Name = "Manage Users",
-                Resource = "users",
-                Action = "write",
-                Description = "Allows creating and updating users"
-            },
-            new PermissionsEntity
-            {
-                Id = Guid.NewGuid(),
-                Name = "View Reports",
-                Resource = "reports",
-                Action = "read",
-                Description = "Allows reading reports"
-            }
-        );
+        _db.Permissions.AddRange(permissions);
 
         await _db.SaveChangesAsync();
     }
 
     private async Task SeedPoliciesAsync()
     {
-        if (await _db.Policies.AnyAsync())
+        var existingPolicyNames = await _db.Policies
+            .Select(policy => policy.Name)
+            .ToListAsync();
+
+        var policies = WellKnownPermissions.SuperAdmin
+            .Where(permission => !existingPolicyNames.Contains(permission))
+            .Select(CreatePolicyEntity)
+            .ToList();
+
+        if (policies.Count == 0)
             return;
 
-        _db.Policies.AddRange(
-            new PoliciesEntity { Id = Guid.NewGuid(), Name = "Read-only policy", Effect = "Allow" },
-            new PoliciesEntity { Id = Guid.NewGuid(), Name = "Full-access policy", Effect = "Allow" }
-        );
+        _db.Policies.AddRange(policies);
 
         await _db.SaveChangesAsync();
     }
@@ -129,37 +122,84 @@ public class AppDbSeeder
         };
 
         await _userManager.CreateAsync(admin, "Admin@12345!");
-        await _userManager.AddToRoleAsync(admin, "Admin");
+        await _userManager.AddToRoleAsync(admin, SuperAdmin);
     }
 
     private async Task SeedJunctionsAsync()
     {
-        var adminRole   = await _roleManager.FindByNameAsync("Admin");
-        var viewerRole  = await _roleManager.FindByNameAsync("Viewer");
-        var managePerm  = await _db.Permissions.FirstOrDefaultAsync(p => p.Action == "write");
-        var readPolicy  = await _db.Policies.FirstOrDefaultAsync(p => p.Name == "Read-only policy");
+        var superAdminRole = await _roleManager.FindByNameAsync(SuperAdmin);
+        var superAdminPermissions = await _db.Permissions
+            .Where(permission => WellKnownPermissions.SuperAdmin.Contains(permission.Name))
+            .ToListAsync();
+        var superAdminPolicies = await _db.Policies
+            .Where(policy => WellKnownPermissions.SuperAdmin.Contains(policy.Name))
+            .ToListAsync();
 
-        if (adminRole is null || managePerm is null || readPolicy is null)
+        if (superAdminRole is null || superAdminPermissions.Count == 0 || superAdminPolicies.Count == 0)
             return;
 
-        if (!await _db.RolePermissions.AnyAsync(rp => rp.RoleId == adminRole.Id))
-        {
-            _db.RolePermissions.Add(new RolePermissionEntity
+        var existingPermissionIds = await _db.RolePermissions
+            .Where(rolePermission => rolePermission.RoleId == superAdminRole.Id)
+            .Select(rolePermission => rolePermission.PermissionId)
+            .ToListAsync();
+
+        var rolePermissions = superAdminPermissions
+            .Where(permission => !existingPermissionIds.Contains(permission.Id))
+            .Select(permission => new RolePermissionEntity
             {
-                RoleId = adminRole.Id,
-                PermissionId = managePerm.Id
-            });
+                RoleId = superAdminRole.Id,
+                PermissionId = permission.Id
+            })
+            .ToList();
+
+        if (rolePermissions.Count > 0)
+        {
+            _db.RolePermissions.AddRange(rolePermissions);
         }
 
-        if (!await _db.RolePolicies.AnyAsync(rp => rp.RoleId == adminRole.Id))
-        {
-            _db.RolePolicies.Add(new RolePolicyEntity
+        var existingPolicyIds = await _db.RolePolicies
+            .Where(rolePolicy => rolePolicy.RoleId == superAdminRole.Id)
+            .Select(rolePolicy => rolePolicy.PolicyId)
+            .ToListAsync();
+
+        var rolePolicies = superAdminPolicies
+            .Where(policy => !existingPolicyIds.Contains(policy.Id))
+            .Select(policy => new RolePolicyEntity
             {
-                RoleId = adminRole.Id,
-                PolicyId = readPolicy.Id
-            });
+                RoleId = superAdminRole.Id,
+                PolicyId = policy.Id
+            })
+            .ToList();
+
+        if (rolePolicies.Count > 0)
+        {
+            _db.RolePolicies.AddRange(rolePolicies);
         }
 
         await _db.SaveChangesAsync();
+    }
+
+    private static PermissionsEntity CreatePermissionEntity(string permission)
+    {
+        var parts = permission.Split(':');
+
+        return new PermissionsEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = permission,
+            Resource = parts[0],
+            Action = parts.Length > 1 ? parts[1] : string.Empty,
+            Description = $"Allows {permission}"
+        };
+    }
+
+    private static PoliciesEntity CreatePolicyEntity(string permission)
+    {
+        return new PoliciesEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = permission,
+            Effect = "Allow"
+        };
     }
 }

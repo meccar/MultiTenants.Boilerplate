@@ -2,23 +2,15 @@ services:
   api:
     build:
       context: .
-      dockerfile: Portal.HttpApi/Dockerfile
+      dockerfile: Portal.HttpApi/Dockerfile.Development
     container_name: multitenants-api
     ports:
-      - "5000:8080"
+      - "5089:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__IdentityDb: Host=postgresql;Port=5432;Database=multitenants_identity;Username=postgres;Password=postgres
-      ConnectionStrings__PostgreSQL: Host=postgresql;Port=5432;Database=multitenants_identity;Username=postgres;Password=postgres
-      ConnectionStrings__MongoDB: mongodb://mongodb:27017
-      MongoDB__DatabaseName: multitenants
-      Jwt__Secret: CHANGE_ME_DEV_SECRET_32_CHARS_MINIMUM_123456
-      Jwt__Issuer: MultiTenants.Boilerplate
-      Jwt__Audience: MultiTenants.Boilerplate
-      Jwt__ExpirationMinutes: 120
-      Authentication__Google__ClientId: ""
-      Authentication__Google__ClientSecret: ""
     depends_on:
       postgresql:
         condition: service_healthy
