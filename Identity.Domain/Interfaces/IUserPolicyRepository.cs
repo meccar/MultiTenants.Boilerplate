@@ -3,9 +3,9 @@ using Identity.Domain.Entities;
 
 namespace Identity.Domain.Interfaces;
 
-public interface IUserGroupRepository
-    : IRepositoryBase<UserGroupEntity, Guid>
+public interface IUserPolicyRepository
+    : IRepositoryBase<UserPolicyEntity, Guid>
 {
-    Task<List<GroupsEntity>> GetGroupsByUserAsync(
+    Task<List<PoliciesEntity>> GetPoliciesByUserAsync(
         UsersEntity user, CancellationToken cancellationToken);
 }

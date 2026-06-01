@@ -15,9 +15,9 @@ public class UserAccountPermissions
     public static readonly string Delete = PermissionBuilder.Build(
         Resources.UserAccount, Actions.Delete);
     public static readonly string AssignRole = PermissionBuilder.Build(
-        Resources.UserAccount, "AssignRole");
+        Resources.UserAccount, Actions.AssignRole);
     public static readonly string ResetPassword = PermissionBuilder.Build(
-        Resources.UserAccount, "ResetPassword");
+        Resources.UserAccount, Actions.ResetPassword);
     public static readonly string Manage = PermissionBuilder.Build(
         Resources.UserAccount, Actions.Manage);
 }

@@ -43,7 +43,7 @@ public class PermissionAuthorizationHandler
                 && cached is CurrentUserModel cachedUser)
             {
                 var isAllowed = requirement.RequiredPermissions
-                    .All(p => cachedUser.Permissions
+                    .All(p => cachedUser.Policies
                         .Any(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase)));
 
                 if (isAllowed) context.Succeed(requirement);

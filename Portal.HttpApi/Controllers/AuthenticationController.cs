@@ -39,7 +39,7 @@ public class AuthenticationController
     }
 
     [HttpPost("CreateUserAccount")]
-    [RequirePermission(IdentityPermissions.AccountsCreateUserAccount)]
+    [RequirePermission(Resources.UserAccount, Actions.Manage)]
     public async Task<ActionResult> CreateUserAccount(
         [FromBody] CreateUserAccountDto createUserAccountDto)
     {
@@ -88,7 +88,6 @@ public class AuthenticationController
     }
     
     [HttpPost("Logout")]
-    [RequirePermission(IdentityPermissions.AccountsLogout)]
     public async Task<ActionResult> Logout()
     {
         _logger.LogInformation($"START: {nameof(Logout)}");
@@ -104,7 +103,7 @@ public class AuthenticationController
     }
     
     [HttpPost("ChangeLoggedInUserPassword")]
-    [RequirePermission(IdentityPermissions.AccountsChangeLoggedInUserPassword)]
+    [RequirePermission(Resources.UserAccount, Actions.ResetPassword)]
     public async Task<ActionResult> ChangeLoggedInUserPassword(
         [FromBody] ChangePasswordDto changePasswordDto)
     {
@@ -122,7 +121,7 @@ public class AuthenticationController
     }
     
     [HttpPost("ChangeLoggedOutUserPassword")]
-    [RequirePermission(IdentityPermissions.AccountsChangeLoggedOutUserPassword)]
+    [RequirePermission(Resources.UserAccount, Actions.ResetPassword)]
     public async Task<ActionResult> ChangeLoggedOutUserPassword(
         [FromBody] ChangePasswordDto changePasswordDto)
     {
@@ -138,7 +137,7 @@ public class AuthenticationController
     }
     
     [HttpPost("ChangePasswordByOwner")]
-    [RequirePermission(IdentityPermissions.AccountsChangePasswordByOwner)]
+    [RequirePermission(Resources.UserAccount, Actions.ResetPassword)]
     public async Task<ActionResult> ChangePasswordByOwner(
         [FromBody] ChangePasswordDto changePasswordDto)
     {

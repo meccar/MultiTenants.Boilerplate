@@ -1,6 +1,5 @@
 using Identity.Domain.Entities;
 using Identity.Domain.Model;
-using System.Text.Json;
 
 namespace Identity.Application.Mapper;
 
@@ -36,10 +35,12 @@ public static class CurrentUserModelMapper
         return new PermissionsModel
         {
             Ids = permissionList.Select(permission => permission.Id).ToList(),
-            Names = permissionList.Select(permission => permission.Name).ToList(),
+            Names = permissionList.Select(ToPermissionName).ToList(),
             Resources = permissionList.Select(permission => permission.Resource).ToList(),
             Actions = permissionList.Select(permission => permission.Action).ToList(),
-            Descriptions = permissionList.Select(permission => permission.Description).ToList()
+            Descriptions = permissionList
+                .Select(permission => $"Allows {ToPermissionName(permission)}")
+                .ToList()
         };
     }
 
@@ -51,10 +52,17 @@ public static class CurrentUserModelMapper
         {
             Ids = policyList.Select(policy => policy.Id).ToList(),
             Names = policyList.Select(policy => policy.Name).ToList(),
-            Effects = policyList.Select(policy => policy.Effect).ToList(),
+            Effects = policyList
+                .SelectMany(policy => policy.PolicyPermissions)
+                .Select(policyPermission => policyPermission.Effect)
+                .ToList(),
             Conditions = policyList
-                .Select(policy => policy.Conditions.RootElement.GetRawText())
+                .SelectMany(policy => policy.PolicyPermissions)
+                .Select(policyPermission => policyPermission.Conditions.RootElement.GetRawText())
                 .ToList()
         };
     }
+
+    private static string ToPermissionName(PermissionsEntity permission)
+        => $"{permission.Resource}:{permission.Action}";
 }

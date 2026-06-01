@@ -15,10 +15,12 @@ public class AppDbContext
     public DbSet<PermissionsEntity> Permissions => Set<PermissionsEntity>();
     public DbSet<PoliciesEntity> Policies => Set<PoliciesEntity>();
     public DbSet<GroupRoleEntity> GroupRoles => Set<GroupRoleEntity>();
+    public DbSet<GroupPolicyEntity> GroupPolicies => Set<GroupPolicyEntity>();
     public DbSet<PolicyPermissionEntity> PolicyPermissions => Set<PolicyPermissionEntity>();
     public DbSet<RolePermissionEntity> RolePermissions => Set<RolePermissionEntity>();
     public DbSet<RolePolicyEntity> RolePolicies => Set<RolePolicyEntity>();
     public DbSet<UserGroupEntity> UserGroups => Set<UserGroupEntity>();
+    public DbSet<UserPolicyEntity> UserPolicies => Set<UserPolicyEntity>();
     
     public AppDbContext(
         DbContextOptions<AppDbContext> options)
@@ -64,18 +66,14 @@ public class AppDbContext
         builder.Entity<PermissionsEntity>(entity =>
         {
             entity.ToTable($"{TablePrefix}permissions");
-            entity.Property(x => x.Name).IsRequired().HasMaxLength(200);
             entity.Property(x => x.Resource).IsRequired().HasMaxLength(200);
             entity.Property(x => x.Action).IsRequired().HasMaxLength(100);
-            entity.Property(x => x.Description).HasMaxLength(1000);
         });
 
         builder.Entity<PoliciesEntity>(entity =>
         {
             entity.ToTable($"{TablePrefix}policies");
             entity.Property(x => x.Name).IsRequired().HasMaxLength(200);
-            entity.Property(x => x.Effect).IsRequired().HasMaxLength(50);
-            entity.Property(x => x.Conditions).HasColumnType("jsonb");
         });
 
         builder.Entity<GroupRoleEntity>(entity =>
@@ -89,6 +87,18 @@ public class AppDbContext
                 .WithMany()
                 .HasForeignKey(x => x.RoleId);
         });
+        
+        builder.Entity<GroupPolicyEntity>(entity =>
+        {
+            entity.ToTable($"{TablePrefix}group_policies");
+            entity.HasKey(x => new { x.GroupId, x.PolicyId });
+            entity.HasOne(x => x.Groups)
+                .WithMany()
+                .HasForeignKey(x => x.GroupId);
+            entity.HasOne(x => x.Policies)
+                .WithMany()
+                .HasForeignKey(x => x.PolicyId);
+        });
 
         builder.Entity<UserGroupEntity>(entity =>
         {
@@ -100,6 +110,18 @@ public class AppDbContext
             entity.HasOne(x => x.Groups)
                 .WithMany()
                 .HasForeignKey(x => x.GroupId);
+        });
+        
+        builder.Entity<UserPolicyEntity>(entity =>
+        {
+            entity.ToTable($"{TablePrefix}user_policies");
+            entity.HasKey(x => new { x.UserId, x.PolicyId });
+            entity.HasOne(x => x.Users)
+                .WithMany()
+                .HasForeignKey(x => x.UserId);
+            entity.HasOne(x => x.Policies)
+                .WithMany()
+                .HasForeignKey(x => x.PolicyId);
         });
 
         builder.Entity<RolePermissionEntity>(entity =>
@@ -130,11 +152,13 @@ public class AppDbContext
         {
             entity.ToTable($"{TablePrefix}policy_permissions");
             entity.HasKey(x => new { x.PolicyId, x.PermissionId });
-            entity.HasOne(x => x.Policies)
-                .WithMany()
+            entity.Property(x => x.Effect).IsRequired().HasMaxLength(50);
+            entity.Property(x => x.Conditions).HasColumnType("jsonb");
+            entity.HasOne(x => x.Policy)
+                .WithMany(x => x.PolicyPermissions)
                 .HasForeignKey(x => x.PolicyId);
-            entity.HasOne(x => x.Permissions)
-                .WithMany()
+            entity.HasOne(x => x.Permission)
+                .WithMany(x => x.PolicyPermissions)
                 .HasForeignKey(x => x.PermissionId);
         });
     }

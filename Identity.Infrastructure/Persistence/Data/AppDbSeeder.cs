@@ -2,6 +2,7 @@ using BuildingBlocks.Core.Aggregates;
 using Identity.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Identity.Infrastructure.Persistence.Data;
 
@@ -28,6 +29,7 @@ public class AppDbSeeder
         await SeedRolesAsync();
         await SeedPermissionsAsync();
         await SeedPoliciesAsync();
+        await SeedPolicyPermissionsAsync();
         await SeedGroupsAsync();
         await SeedUsersAsync();
         await SeedJunctionsAsync();
@@ -54,9 +56,17 @@ public class AppDbSeeder
 
     private async Task SeedPermissionsAsync()
     {
-        var existingPermissionNames = await _db.Permissions
-            .Select(permission => permission.Name)
+        var existingPermissions = await _db.Permissions
+            .Select(permission => new
+            {
+                permission.Resource,
+                permission.Action
+            })
             .ToListAsync();
+
+        var existingPermissionNames = existingPermissions
+            .Select(permission => ToPermissionName(permission.Resource, permission.Action))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var permissions = WellKnownPermissions.SuperAdmin
             .Where(permission => !existingPermissionNames.Contains(permission))
@@ -128,9 +138,10 @@ public class AppDbSeeder
     private async Task SeedJunctionsAsync()
     {
         var superAdminRole = await _roleManager.FindByNameAsync(SuperAdmin);
-        var superAdminPermissions = await _db.Permissions
-            .Where(permission => WellKnownPermissions.SuperAdmin.Contains(permission.Name))
-            .ToListAsync();
+        var permissions = await _db.Permissions.ToListAsync();
+        var superAdminPermissions = permissions
+            .Where(permission => WellKnownPermissions.SuperAdmin.Contains(ToPermissionName(permission)))
+            .ToList();
         var superAdminPolicies = await _db.Policies
             .Where(policy => WellKnownPermissions.SuperAdmin.Contains(policy.Name))
             .ToListAsync();
@@ -179,6 +190,69 @@ public class AppDbSeeder
         await _db.SaveChangesAsync();
     }
 
+    private async Task SeedPolicyPermissionsAsync()
+    {
+        var seededPermissionNames = WellKnownPermissions.SuperAdmin.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var allPermissions = await _db.Permissions.ToListAsync();
+        var permissions = allPermissions
+            .Where(permission => seededPermissionNames.Contains(ToPermissionName(permission)))
+            .ToList();
+        var policies = await _db.Policies
+            .Where(policy => seededPermissionNames.Contains(policy.Name))
+            .ToListAsync();
+
+        if (permissions.Count == 0 || policies.Count == 0)
+            return;
+
+        var policyByName = policies.ToDictionary(policy => policy.Name);
+        var policyIds = policies.Select(policy => policy.Id).ToList();
+        var permissionIds = permissions.Select(permission => permission.Id).ToList();
+
+        var existingPolicyPermissionKeys = await _db.PolicyPermissions
+            .Where(policyPermission =>
+                policyIds.Contains(policyPermission.PolicyId) &&
+                permissionIds.Contains(policyPermission.PermissionId))
+            .Select(policyPermission => new
+            {
+                policyPermission.PolicyId,
+                policyPermission.PermissionId
+            })
+            .ToListAsync();
+
+        var existingKeys = existingPolicyPermissionKeys
+            .Select(policyPermission => (policyPermission.PolicyId, policyPermission.PermissionId))
+            .ToHashSet();
+
+        var policyPermissions = permissions
+            .Select(permission => new
+            {
+                Name = ToPermissionName(permission),
+                Permission = permission
+            })
+            .Where(item => policyByName.ContainsKey(item.Name))
+            .Select(item => new
+            {
+                Policy = policyByName[item.Name],
+                item.Permission
+            })
+            .Where(item => !existingKeys.Contains((item.Policy.Id, item.Permission.Id)))
+            .Select(item => new PolicyPermissionEntity
+            {
+                PolicyId = item.Policy.Id,
+                PermissionId = item.Permission.Id,
+                Effect = "Allow",
+                Conditions = JsonDocument.Parse("{}")
+            })
+            .ToList();
+
+        if (policyPermissions.Count == 0)
+            return;
+
+        _db.PolicyPermissions.AddRange(policyPermissions);
+
+        await _db.SaveChangesAsync();
+    }
+
     private static PermissionsEntity CreatePermissionEntity(string permission)
     {
         var parts = permission.Split(':');
@@ -186,10 +260,8 @@ public class AppDbSeeder
         return new PermissionsEntity
         {
             Id = Guid.NewGuid(),
-            Name = permission,
             Resource = parts[0],
-            Action = parts.Length > 1 ? parts[1] : string.Empty,
-            Description = $"Allows {permission}"
+            Action = parts.Length > 1 ? parts[1] : string.Empty
         };
     }
 
@@ -198,8 +270,13 @@ public class AppDbSeeder
         return new PoliciesEntity
         {
             Id = Guid.NewGuid(),
-            Name = permission,
-            Effect = "Allow"
+            Name = permission
         };
     }
+
+    private static string ToPermissionName(PermissionsEntity permission)
+        => ToPermissionName(permission.Resource, permission.Action);
+
+    private static string ToPermissionName(string resource, string action)
+        => $"{resource}:{action}";
 }
