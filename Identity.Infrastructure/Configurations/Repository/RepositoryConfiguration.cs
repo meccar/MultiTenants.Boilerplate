@@ -16,11 +16,13 @@ public static class RepositoryConfiguration
         services.AddScoped<IGroupsRepository, GroupRepository>();
         services.AddScoped<IPermissionsRepository, PermissionsRepository>();
         services.AddScoped<IGroupRoleRepository, GroupRoleRepository>();
+        services.AddScoped<IGroupPolicyRepository, GroupPolicyRepository>();
         services.AddScoped<IPoliciesRepository, PoliciesRepository>();
         services.AddScoped<IPolicyPermissionRepository, PolicyPermissionRepository>();
         services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
         services.AddScoped<IRolePolicyRepository, RolePolicyRepository>();
         services.AddScoped<IUserGroupRepository, UserGroupRepository>();
+        services.AddScoped<IUserPolicyRepository, UserPolicyRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         return services;

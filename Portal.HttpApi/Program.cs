@@ -13,10 +13,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.ConfigureHostDependencyInjection(builder.Configuration);
 builder.Services.ConfigureIdentityApplicationDependencyInjection(builder.Configuration);
 builder.Services.ConfigureIdentityInfrastructureDependencyInjection(builder.Configuration);
 builder.Services.ConfigureTenancyDomainDependencyInjection(builder.Configuration);
-builder.Services.ConfigureHostDependencyInjection(builder.Configuration);
 
 var app = builder.Build();
 
