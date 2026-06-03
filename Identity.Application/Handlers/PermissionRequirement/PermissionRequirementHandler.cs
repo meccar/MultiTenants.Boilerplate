@@ -2,6 +2,7 @@ using System.Security.Claims;
 using BuildingBlocks.Shared.Constants;
 using BuildingBlocks.Shared.Exceptions;
 using Identity.Application.Queries.GetUserPermissions;
+using Identity.Domain.Entities;
 using Identity.Domain.Model;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -43,8 +44,9 @@ public class PermissionAuthorizationHandler
                 && cached is CurrentUserModel cachedUser)
             {
                 var isAllowed = requirement.RequiredPermissions
-                    .All(p => cachedUser.Policies
-                        .Any(x => x.Name.Equals(p, StringComparison.OrdinalIgnoreCase)));
+                    .All(p => cachedUser.Permissions
+                        .Any(permission => ToPermissionName(permission)
+                            .Equals(p, StringComparison.OrdinalIgnoreCase)));
 
                 if (isAllowed) context.Succeed(requirement);
                 else context.Fail();
@@ -68,4 +70,7 @@ public class PermissionAuthorizationHandler
             context.Fail();
         }
     }
+
+    private static string ToPermissionName(PermissionsEntity permission)
+        => $"{permission.Resource}:{permission.Action}";
 }

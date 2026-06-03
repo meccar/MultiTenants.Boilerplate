@@ -25,4 +25,13 @@ public class PolicyPermissionRepository
             .Distinct()
             .ToListAsync(cancellationToken);
     }
+    
+    public async Task<List<PermissionsEntity>> GetPermissionsByPoliciesAsync(
+        List<PoliciesEntity> policyIds,
+        CancellationToken cancellationToken = default)
+    {
+        return await GetPermissionsByPoliciesAsync(
+            policyIds.Select(policy => policy.Id),
+            cancellationToken);
+    }
 }

@@ -1,9 +1,9 @@
 using BuildingBlocks.Shared.Exceptions;
+using Identity.Domain.Entities;
 using Identity.Domain.Interfaces;
 using Identity.Domain.Model;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Identity.Domain.Entities;
 
 namespace Identity.Application.Queries.GetUserPermissions;
 
@@ -15,13 +15,16 @@ public class GetUserPermissionsQueryHandler
     private readonly IUserPolicyRepository _userPolicyRepository;
     private readonly IUserGroupRepository _userGroupRepository;
     private readonly IGroupPolicyRepository _groupPolicyRepository;
+    private readonly IPolicyPermissionRepository _policyPermissionRepository;
+    
     
     public GetUserPermissionsQueryHandler(
         UserManager<UsersEntity> userManager,
         IRolePermissionRepository rolePermissionRepository,
         IUserPolicyRepository userPolicyRepository,
         IUserGroupRepository userGroupRepository,
-        IGroupPolicyRepository groupPolicyRepository
+        IGroupPolicyRepository groupPolicyRepository,
+        IPolicyPermissionRepository policyPermissionRepository
     )
     {
         _userManager = userManager;
@@ -29,6 +32,7 @@ public class GetUserPermissionsQueryHandler
         _userPolicyRepository = userPolicyRepository;
         _userGroupRepository = userGroupRepository;
         _groupPolicyRepository = groupPolicyRepository;
+        _policyPermissionRepository = policyPermissionRepository;
     }
 
     public async Task<CurrentUserModel> Handle(
@@ -45,28 +49,60 @@ public class GetUserPermissionsQueryHandler
             throw new UnauthorizedException();
 
         List<PoliciesEntity> policies = [];
-        List<GroupsEntity> groups = [];
         
         var userRoleNames = await _userManager.GetRolesAsync(user);
         if (userRoleNames.Any())
-            policies = await _rolePermissionRepository.GetPoliciesByRolesAsync(userRoleNames, cancellationToken);
-        if (policies.Any())
         {
-            groups = await _userGroupRepository .GetGroupsByUserAsync(user, cancellationToken);
-            if (groups.Any())
-                policies = await _groupPolicyRepository.GetPoliciesByGroupAsync(groups, cancellationToken);
+            var rolePolicies = await _rolePermissionRepository.GetPoliciesByRolesAsync(
+                userRoleNames,
+                cancellationToken);
+            policies.AddRange(rolePolicies);
         }
-        if (policies.Any())
-            policies = await _userPolicyRepository.GetPoliciesByUserAsync(user, cancellationToken);
+
+        var groups = await _userGroupRepository.GetGroupsByUserAsync(user, cancellationToken);
+        if (groups.Any())
+        {
+            var groupPolicies = await _groupPolicyRepository.GetPoliciesByGroupAsync(groups, cancellationToken);
+            policies.AddRange(groupPolicies);
+        }
+
+        var userPolicies = await _userPolicyRepository.GetPoliciesByUserAsync(user, cancellationToken);
+        policies.AddRange(userPolicies);
+
+        policies = policies
+            .DistinctBy(policy => policy.Id)
+            .ToList();
+
+        var permissions = await _policyPermissionRepository.GetPermissionsByPoliciesAsync(policies, cancellationToken);
+        var isAllowed = HasRequiredPermissions(permissions, request.RequiredPermissions);
         
         var currentUser = new CurrentUserModel
         {
             User = user,
             Roles = userRoleNames,
             Policies = policies,
-            Groups = groups
+            Permissions = permissions,
+            Groups = groups,
+            IsAllowed = isAllowed
         };
         
         return currentUser;
     }
+
+    private static bool HasRequiredPermissions(
+        IEnumerable<PermissionsEntity> userPermissions,
+        IReadOnlyList<string>? requiredPermissions)
+    {
+        if (requiredPermissions is null || requiredPermissions.Count == 0)
+            return true;
+
+        var permissionNames = userPermissions
+            .Select(ToPermissionName)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        return requiredPermissions.All(permissionNames.Contains);
+    }
+
+    private static string ToPermissionName(PermissionsEntity permission)
+        => $"{permission.Resource}:{permission.Action}";
 }

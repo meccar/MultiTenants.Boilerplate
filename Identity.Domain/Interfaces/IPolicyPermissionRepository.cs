@@ -9,4 +9,8 @@ public interface IPolicyPermissionRepository
     Task<List<PermissionsEntity>> GetPermissionsByPoliciesAsync(
         IEnumerable<Guid> policyIds,
         CancellationToken cancellationToken = default);
+    
+    Task<List<PermissionsEntity>> GetPermissionsByPoliciesAsync(
+        List<PoliciesEntity> policyIds,
+        CancellationToken cancellationToken = default);
 }
