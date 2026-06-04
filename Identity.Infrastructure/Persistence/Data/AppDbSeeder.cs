@@ -1,5 +1,6 @@
 using BuildingBlocks.Core.Aggregates;
 using Identity.Domain.Entities;
+using Identity.Domain.Helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -65,7 +66,7 @@ public class AppDbSeeder
             .ToListAsync();
 
         var existingPermissionNames = existingPermissions
-            .Select(permission => ToPermissionName(permission.Resource, permission.Action))
+            .Select(permission => PermissionHelper.ToPermissionName(permission.Resource, permission.Action))
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
         var permissions = WellKnownPermissions.SuperAdmin
@@ -140,7 +141,7 @@ public class AppDbSeeder
         var superAdminRole = await _roleManager.FindByNameAsync(SuperAdmin);
         var permissions = await _db.Permissions.ToListAsync();
         var superAdminPermissions = permissions
-            .Where(permission => WellKnownPermissions.SuperAdmin.Contains(ToPermissionName(permission)))
+            .Where(permission => WellKnownPermissions.SuperAdmin.Contains(PermissionHelper.ToPermissionName(permission)))
             .ToList();
         var superAdminPolicies = await _db.Policies
             .Where(policy => WellKnownPermissions.SuperAdmin.Contains(policy.Name))
@@ -195,7 +196,7 @@ public class AppDbSeeder
         var seededPermissionNames = WellKnownPermissions.SuperAdmin.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var allPermissions = await _db.Permissions.ToListAsync();
         var permissions = allPermissions
-            .Where(permission => seededPermissionNames.Contains(ToPermissionName(permission)))
+            .Where(permission => seededPermissionNames.Contains(PermissionHelper.ToPermissionName(permission)))
             .ToList();
         var policies = await _db.Policies
             .Where(policy => seededPermissionNames.Contains(policy.Name))
@@ -226,7 +227,7 @@ public class AppDbSeeder
         var policyPermissions = permissions
             .Select(permission => new
             {
-                Name = ToPermissionName(permission),
+                Name = PermissionHelper.ToPermissionName(permission),
                 Permission = permission
             })
             .Where(item => policyByName.ContainsKey(item.Name))
@@ -274,9 +275,4 @@ public class AppDbSeeder
         };
     }
 
-    private static string ToPermissionName(PermissionsEntity permission)
-        => ToPermissionName(permission.Resource, permission.Action);
-
-    private static string ToPermissionName(string resource, string action)
-        => $"{resource}:{action}";
 }

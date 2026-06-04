@@ -5,6 +5,6 @@ namespace Identity.Application.Queries.GetUserPermissions;
 
 public record GetUserPermissionsQuery(
     string Username,
-    IReadOnlyList<string>? RequiredPermissions = null
+    IEnumerable<string>? RequiredPermissions = null
     ) 
     : IRequest<CurrentUserModel>;

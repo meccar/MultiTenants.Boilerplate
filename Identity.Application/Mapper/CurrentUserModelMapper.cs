@@ -1,4 +1,5 @@
 using Identity.Domain.Entities;
+using Identity.Domain.Helpers;
 using Identity.Domain.Model;
 
 namespace Identity.Application.Mapper;
@@ -35,11 +36,11 @@ public static class CurrentUserModelMapper
         return new PermissionsModel
         {
             Ids = permissionList.Select(permission => permission.Id).ToList(),
-            Names = permissionList.Select(ToPermissionName).ToList(),
+            Names = permissionList.Select(PermissionHelper.ToPermissionName).ToList(),
             Resources = permissionList.Select(permission => permission.Resource).ToList(),
             Actions = permissionList.Select(permission => permission.Action).ToList(),
             Descriptions = permissionList
-                .Select(permission => $"Allows {ToPermissionName(permission)}")
+                .Select(permission => $"Allows {PermissionHelper.ToPermissionName(permission)}")
                 .ToList()
         };
     }
@@ -63,6 +64,4 @@ public static class CurrentUserModelMapper
         };
     }
 
-    private static string ToPermissionName(PermissionsEntity permission)
-        => $"{permission.Resource}:{permission.Action}";
 }

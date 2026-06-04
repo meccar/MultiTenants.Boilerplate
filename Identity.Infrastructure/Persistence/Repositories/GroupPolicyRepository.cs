@@ -16,20 +16,17 @@ public class GroupPolicyRepository
     public async Task<List<PoliciesEntity>> GetPoliciesByGroupAsync(
         List<GroupsEntity> groups, CancellationToken cancellationToken)
     {
-        List<PoliciesEntity> policies = [];
-        foreach (var group in groups)
-            policies =  await _context.GroupPolicies
-                .Join(_context.Groups,
-                    rp => rp.GroupId,
-                    r => r.Id,
-                    (rp, r) => new { rp.PolicyId, r.Id })
-                .Where(x => x.Id == group.Id)
-                .Join(_context.Policies,
-                    x => x.PolicyId,
-                    p => p.Id,
-                    (_, p) => p)
-                .Distinct()
-                .ToListAsync(cancellationToken);
-        return policies;
+        var groupIds = groups
+            .Select(group => group.Id)
+            .ToHashSet();
+
+        return await _context.GroupPolicies
+            .Where(groupPolicy => groupIds.Contains(groupPolicy.GroupId))
+            .Join(_context.Policies,
+                groupPolicy => groupPolicy.PolicyId,
+                policy => policy.Id,
+                (_, policy) => policy)
+            .Distinct()
+            .ToListAsync(cancellationToken);
     }
 }

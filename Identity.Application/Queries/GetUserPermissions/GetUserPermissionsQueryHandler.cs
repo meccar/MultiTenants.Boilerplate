@@ -1,5 +1,6 @@
 using BuildingBlocks.Shared.Exceptions;
 using Identity.Domain.Entities;
+using Identity.Domain.Helpers;
 using Identity.Domain.Interfaces;
 using Identity.Domain.Model;
 using MediatR;
@@ -11,7 +12,7 @@ public class GetUserPermissionsQueryHandler
     : IRequestHandler<GetUserPermissionsQuery, CurrentUserModel>
 {
     private readonly UserManager<UsersEntity> _userManager;
-    private readonly IRolePermissionRepository _rolePermissionRepository;
+    private readonly IRolePolicyRepository _rolePolicyRepository;
     private readonly IUserPolicyRepository _userPolicyRepository;
     private readonly IUserGroupRepository _userGroupRepository;
     private readonly IGroupPolicyRepository _groupPolicyRepository;
@@ -20,7 +21,7 @@ public class GetUserPermissionsQueryHandler
     
     public GetUserPermissionsQueryHandler(
         UserManager<UsersEntity> userManager,
-        IRolePermissionRepository rolePermissionRepository,
+        IRolePolicyRepository rolePolicyRepository,
         IUserPolicyRepository userPolicyRepository,
         IUserGroupRepository userGroupRepository,
         IGroupPolicyRepository groupPolicyRepository,
@@ -28,7 +29,7 @@ public class GetUserPermissionsQueryHandler
     )
     {
         _userManager = userManager;
-        _rolePermissionRepository = rolePermissionRepository;
+        _rolePolicyRepository = rolePolicyRepository;
         _userPolicyRepository = userPolicyRepository;
         _userGroupRepository = userGroupRepository;
         _groupPolicyRepository = groupPolicyRepository;
@@ -53,7 +54,7 @@ public class GetUserPermissionsQueryHandler
         var userRoleNames = await _userManager.GetRolesAsync(user);
         if (userRoleNames.Any())
         {
-            var rolePolicies = await _rolePermissionRepository.GetPoliciesByRolesAsync(
+            var rolePolicies = await _rolePolicyRepository.GetPoliciesByRolesAsync(
                 userRoleNames,
                 cancellationToken);
             policies.AddRange(rolePolicies);
@@ -74,7 +75,7 @@ public class GetUserPermissionsQueryHandler
             .ToList();
 
         var permissions = await _policyPermissionRepository.GetPermissionsByPoliciesAsync(policies, cancellationToken);
-        var isAllowed = HasRequiredPermissions(permissions, request.RequiredPermissions);
+        var isAllowed = PermissionHelper.HasRequiredPermissions(permissions, request.RequiredPermissions);
         
         var currentUser = new CurrentUserModel
         {
@@ -88,21 +89,4 @@ public class GetUserPermissionsQueryHandler
         
         return currentUser;
     }
-
-    private static bool HasRequiredPermissions(
-        IEnumerable<PermissionsEntity> userPermissions,
-        IReadOnlyList<string>? requiredPermissions)
-    {
-        if (requiredPermissions is null || requiredPermissions.Count == 0)
-            return true;
-
-        var permissionNames = userPermissions
-            .Select(ToPermissionName)
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-        return requiredPermissions.All(permissionNames.Contains);
-    }
-
-    private static string ToPermissionName(PermissionsEntity permission)
-        => $"{permission.Resource}:{permission.Action}";
 }

@@ -2,7 +2,7 @@ using System.Security.Claims;
 using BuildingBlocks.Shared.Constants;
 using BuildingBlocks.Shared.Exceptions;
 using Identity.Application.Queries.GetUserPermissions;
-using Identity.Domain.Entities;
+using Identity.Domain.Helpers;
 using Identity.Domain.Model;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -43,10 +43,9 @@ public class PermissionAuthorizationHandler
                     HttpContextKeys.CurrentUser, out var cached) == true
                 && cached is CurrentUserModel cachedUser)
             {
-                var isAllowed = requirement.RequiredPermissions
-                    .All(p => cachedUser.Permissions
-                        .Any(permission => ToPermissionName(permission)
-                            .Equals(p, StringComparison.OrdinalIgnoreCase)));
+                var isAllowed = PermissionHelper.HasRequiredPermissions(
+                    cachedUser.Permissions,
+                    requirement.RequiredPermissions);
 
                 if (isAllowed) context.Succeed(requirement);
                 else context.Fail();
@@ -70,7 +69,4 @@ public class PermissionAuthorizationHandler
             context.Fail();
         }
     }
-
-    private static string ToPermissionName(PermissionsEntity permission)
-        => $"{permission.Resource}:{permission.Action}";
 }
