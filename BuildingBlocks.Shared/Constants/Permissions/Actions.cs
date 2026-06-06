@@ -2,6 +2,8 @@ namespace BuildingBlocks.Shared.Constants.Permissions;
 
 public static class Actions
 {
+    // Base actions
+    public const string Zero = nameof(Zero);
     public const string View = nameof(View);
     public const string List = nameof(List);
     public const string Create = nameof(Create);
@@ -26,6 +28,7 @@ public static class Actions
     public const string Purge = nameof(Purge);
     public const string Read = nameof(Read);
     
+    // Additional actions
     public const string ResetPassword = nameof(ResetPassword);
     public const string AssignRole = nameof(AssignRole);
 }

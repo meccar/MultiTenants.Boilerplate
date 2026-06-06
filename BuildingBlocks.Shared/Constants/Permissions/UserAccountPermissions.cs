@@ -4,6 +4,8 @@ namespace BuildingBlocks.Shared.Constants.Permissions;
 
 public class UserAccountPermissions
 {
+    public static readonly string Zero = PermissionBuilder.Build(
+        Resources.UserAccount, Actions.Zero);
     public static readonly string View = PermissionBuilder.Build(
         Resources.UserAccount, Actions.View);
     public static readonly string List = PermissionBuilder.Build(

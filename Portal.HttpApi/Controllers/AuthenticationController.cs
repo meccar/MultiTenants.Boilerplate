@@ -88,7 +88,7 @@ public class AuthenticationController
     }
     
     [HttpPost("Logout")]
-    [AllowAnonymous]
+    [RequirePermission(Resources.UserAccount, Actions.Zero)]
     public async Task<ActionResult> Logout()
     {
         _logger.LogInformation($"START: {nameof(Logout)}");

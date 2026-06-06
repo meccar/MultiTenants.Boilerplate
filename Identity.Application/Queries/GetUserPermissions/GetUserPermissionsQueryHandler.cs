@@ -77,7 +77,7 @@ public class GetUserPermissionsQueryHandler
         var permissions = await _policyPermissionRepository.GetPermissionsByPoliciesAsync(policies, cancellationToken);
         var isAllowed = PermissionHelper.HasRequiredPermissions(permissions, request.RequiredPermissions);
         
-        var currentUser = new CurrentUserModel
+        return new CurrentUserModel
         {
             User = user,
             Roles = userRoleNames,
@@ -86,7 +86,5 @@ public class GetUserPermissionsQueryHandler
             Groups = groups,
             IsAllowed = isAllowed
         };
-        
-        return currentUser;
     }
 }
