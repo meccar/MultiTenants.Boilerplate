@@ -62,6 +62,7 @@ public class OAuthAuthenticationCommandHandler
         var tokenRequest = new GenerateTokenRequestModel(
             UserName: user.UserName ?? user.Email!,
             Roles: roles.ToList(),
+            SecurityStamp: user.SecurityStamp!,
             TenantId: _tenant.TenantId
         );
         

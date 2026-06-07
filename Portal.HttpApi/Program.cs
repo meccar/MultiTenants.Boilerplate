@@ -35,14 +35,17 @@ if (app.Environment.IsDevelopment())
             c.OAuthClientId(googleClientId);
         c.OAuthUsePkce();
     });
-    app.UseHttpsRedirection();
 }
 app.UseGlobalExceptionHandling();
 app.UseRateLimiter();
 app.UseCors("AllowConfiguredOrigins");
-app.UseMultiTenant();
+
+app.UseRouting(); 
+
 app.UseAuthentication();
+app.UseMultiTenant();
 app.UseAuthorization();
+
 app.MapControllers();
 app.MapCarter();
 

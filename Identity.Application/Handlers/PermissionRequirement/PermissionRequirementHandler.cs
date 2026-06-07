@@ -32,6 +32,7 @@ public class PermissionAuthorizationHandler
                            ?? httpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Sub)
                            ?? httpContext?.User.FindFirstValue(ClaimTypes.Name)
                            ?? httpContext?.User.Identity?.Name;
+            var tokenStamp = httpContext?.User.FindFirstValue("security_stamp");
 
             if (string.IsNullOrWhiteSpace(username))
             {
@@ -43,6 +44,12 @@ public class PermissionAuthorizationHandler
                     HttpContextKeys.CurrentUser, out var cached) == true
                 && cached is CurrentUserModel cachedUser)
             {
+                if (cachedUser.User.SecurityStamp != tokenStamp)
+                {
+                    context.Fail();
+                    return;
+                }
+                
                 var isAllowed = PermissionHelper.HasRequiredPermissions(
                     cachedUser.Permissions,
                     requirement.RequiredPermissions);
@@ -57,6 +64,12 @@ public class PermissionAuthorizationHandler
                 RequiredPermissions: requirement.RequiredPermissions.ToList()
             ));
 
+            if (result.User.SecurityStamp != tokenStamp)
+            {
+                context.Fail();
+                return;
+            }
+            
             if (httpContext != null)
                 httpContext.Items[HttpContextKeys.CurrentUser] = result;
 

@@ -40,6 +40,7 @@ public class JwtToken
             {
                 new(JwtRegisteredClaimNames.UniqueName, request.UserName),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new("security_stamp", request.SecurityStamp),
             };
 
             if (!string.IsNullOrWhiteSpace(request.TenantId))

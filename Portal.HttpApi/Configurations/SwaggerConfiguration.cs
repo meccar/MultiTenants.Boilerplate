@@ -28,8 +28,8 @@ public static class SwaggerConfiguration
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
-                Type = SecuritySchemeType.ApiKey,
-                Scheme = "bearer",
+                Type = SecuritySchemeType.Http,
+                Scheme = "Bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
                 Description = "Enter your JWT token. The 'Bearer ' prefix is added automatically."
