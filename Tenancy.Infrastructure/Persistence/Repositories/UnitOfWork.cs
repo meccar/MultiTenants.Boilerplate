@@ -28,4 +28,9 @@ public class UnitOfWork : IUnitOfWork
     {
         throw new NotImplementedException();
     }
+
+    public ValueTask DisposeAsync()
+    {
+        throw new NotImplementedException();
+    }
 }

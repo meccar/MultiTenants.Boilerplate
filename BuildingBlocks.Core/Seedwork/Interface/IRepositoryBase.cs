@@ -1,7 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
-using System.Linq.Expressions;
+﻿namespace BuildingBlocks.Core.Seedwork.Interface;
 
-namespace BuildingBlocks.Core.Seedwork.Interface;
 public interface IRepositoryBase<TEntity, TKey>
     where TEntity : class
 {
@@ -18,59 +16,43 @@ public interface IRepositoryBase<TEntity, TKey>
 
     #region Creation Methods
 
-    Task<EntityEntry<TEntity>?> CreateAsync(TEntity entity);
-    Task<IEnumerable<EntityEntry<TEntity>>> CreateListAsync(IEnumerable<TEntity> entities);
+    Task<TEntity?> CreateAsync(TEntity entity, CancellationToken ct = default);
+    Task<IEnumerable<TEntity>> CreateListAsync(IEnumerable<TEntity> entities, CancellationToken ct = default);
 
     #endregion
 
     #region Update Methods
 
-    Task<EntityEntry<TEntity>?> UpdateAsync(TEntity entity);
-    Task UpdateListAsync(IEnumerable<TEntity> entities);
+    Task<TEntity?> UpdateAsync(TEntity entity, CancellationToken ct = default);
+    Task UpdateListAsync(IEnumerable<TEntity> entities, CancellationToken ct = default);
 
     #endregion
 
     #region Deletion and Restoration Methods
 
-    Task DeleteAsync(TKey id);
-    Task DeleteAsync(TEntity entity);
-    Task DeleteListAsync(IEnumerable<TEntity> entities);
-    Task DeleteListAsync(IEnumerable<TKey> ids);
-    Task SoftDeleteAsync(TEntity entity);
-    Task SoftDeleteAsync(TKey id);
-    Task SoftDeleteListAsync(IEnumerable<TEntity> entities);
-    Task SoftDeleteListAsync(IEnumerable<TKey> ids);
-    Task RestoreAsync(TEntity entity);
-    Task RestoreAsync(TKey id);
+    Task DeleteAsync(TKey id, CancellationToken ct = default);
+    Task DeleteAsync(TEntity entity, CancellationToken ct = default);
+    Task DeleteListAsync(IEnumerable<TEntity> entities, CancellationToken ct = default);
+    Task DeleteListAsync(IEnumerable<TKey> ids, CancellationToken ct = default);
+    Task SoftDeleteAsync(TKey id, CancellationToken ct = default);
+    Task SoftDeleteAsync(TEntity entity, CancellationToken ct = default);
+    Task SoftDeleteListAsync(IEnumerable<TKey> ids, CancellationToken ct = default);
+    Task SoftDeleteListAsync(IEnumerable<TEntity> entities, CancellationToken ct = default);
+    Task RestoreAsync(TKey id, CancellationToken ct = default);
+    Task RestoreAsync(TEntity entity, CancellationToken ct = default);
 
     #endregion
 
     #region Query Methods
 
-    Task<PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize);
+    Task<TEntity?> GetByIdAsync(TKey id, CancellationToken ct = default);
+    Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken ct = default);
+    Task<bool> ExistsAsync(TKey id, CancellationToken ct = default);
+    Task<int> CountAsync(CancellationToken ct = default);
     Task<PagedResult<TEntity>> GetPagedAsync(
         int pageNumber,
         int pageSize,
-        Expression<Func<TEntity, bool>>? expression = null,
-        Expression<Func<TEntity, object>>? orderBy = null,
-        bool ascending = true,
-        bool trackChanges = false,
-        params Expression<Func<TEntity, object>>[] includeProperties);
-    IQueryable<TEntity> FindAll(bool trackChanges = false);
-    IQueryable<TEntity> FindAll(bool trackChanges = false, params Expression<Func<TEntity, object>>[] includeProperties);
-    IQueryable<TEntity> FindByCondition(Expression<Func<TEntity, bool>> expression, bool trackChanges = false);
-    IQueryable<TEntity> FindByCondition(Expression<Func<TEntity, bool>> expression, bool trackChanges = false,
-        params Expression<Func<TEntity, object>>[] includeProperties);
-    Task<IEnumerable<TEntity>> FindAllAsync(bool trackChanges = false);
-    Task<IEnumerable<TEntity>> FindAllAsync(bool trackChanges = false, params Expression<Func<TEntity, object>>[] includeProperties);
-    Task<IEnumerable<TEntity>> FindByConditionAsync(Expression<Func<TEntity, bool>> expression, bool trackChanges = false);
-    Task<IEnumerable<TEntity>> FindByConditionAsync(Expression<Func<TEntity, bool>> expression, bool trackChanges = false,
-        params Expression<Func<TEntity, object>>[] includeProperties);
-    Task<bool> ExistAsync(TKey id);
-    Task<int> CountAsync();
-    Task<int> CountAsync(Expression<Func<TEntity, bool>> expression);
-    Task<TEntity?> GetByIdAsync(TKey id);
-    Task<TEntity?> GetByIdAsync(TKey id, params Expression<Func<TEntity, object>>[] includeProperties);
+        CancellationToken ct = default);
 
     #endregion
 }

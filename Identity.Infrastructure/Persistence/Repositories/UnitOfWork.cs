@@ -36,6 +36,14 @@ namespace Identity.Infrastructure.Persistence.Repositories
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+        
+        public async ValueTask DisposeAsync()
+        {
+            await DisposeAsyncCore().ConfigureAwait(false);
+
+            Dispose(disposing: false);
+            GC.SuppressFinalize(this);
+        }
 
         public async Task BeginTransactionAsync(
             CancellationToken cancellationToken = default)
@@ -89,6 +97,14 @@ namespace Identity.Infrastructure.Persistence.Repositories
             if (_disposed) return;
             if (disposing)
                 _context.Dispose();
+            _disposed = true;
+        }
+        
+        protected virtual async ValueTask DisposeAsyncCore()
+        {
+            if (_disposed)
+                return;
+            await _context.DisposeAsync();
             _disposed = true;
         }
     }
