@@ -6,11 +6,11 @@ namespace Stockroom.Domain.Entities;
 
 public class StoreEntity : AggregateRoot
 {
-    public string Name { get; private set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
     public EStoreType Type { get; set; }
-    public string? Description { get; private set; }
-    public Address Address { get; private set; } = default!;
-    public string? Phone { get; private set; }
-    public string? Email { get; private set; }
-    public bool IsActive { get; private set; } = true;
+    public string? Description { get; set; }
+    public Address Address { get; set; } = default!;
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+    public bool IsActive { get; set; } = true;
 }

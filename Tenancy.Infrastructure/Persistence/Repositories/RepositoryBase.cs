@@ -152,4 +152,99 @@ public class RepositoryBase<TEntity, TKey>
     {
         throw new NotImplementedException();
     }
+
+    public Task<TEntity?> CreateAsync(TEntity entity, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<TEntity>> CreateListAsync(IEnumerable<TEntity> entities, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<TEntity?> UpdateAsync(TEntity entity, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task UpdateListAsync(IEnumerable<TEntity> entities, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task DeleteAsync(TKey id, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task DeleteAsync(TEntity entity, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task DeleteListAsync(IEnumerable<TEntity> entities, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task DeleteListAsync(IEnumerable<TKey> ids, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SoftDeleteAsync(TKey id, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SoftDeleteAsync(TEntity entity, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SoftDeleteListAsync(IEnumerable<TKey> ids, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task SoftDeleteListAsync(IEnumerable<TEntity> entities, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task RestoreAsync(TKey id, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task RestoreAsync(TEntity entity, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<TEntity?> GetByIdAsync(TKey id, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IEnumerable<TEntity>> GetAllAsync(CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<bool> ExistsAsync(TKey id, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<int> CountAsync(CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<IRepositoryBase<TEntity, TKey>.PagedResult<TEntity>> GetPagedAsync(int pageNumber, int pageSize, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
 }

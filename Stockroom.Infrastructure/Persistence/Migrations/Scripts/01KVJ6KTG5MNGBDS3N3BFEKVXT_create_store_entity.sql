@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS "Stores" (
+    "Id"           UUID PRIMARY KEY,
+    "Name"         TEXT NOT NULL,
+    "Type"         INTEGER NOT NULL,
+    "Description"  TEXT NULL,
+    "Phone"        TEXT NULL,
+    "Email"        TEXT NULL,
+    "IsActive"     BOOLEAN NOT NULL DEFAULT TRUE,
+    "IsDeleted"    BOOLEAN NOT NULL DEFAULT FALSE,
+    "CreatedAt"    TIMESTAMPTZ NOT NULL,
+    "UpdatedAt"    TIMESTAMPTZ NULL,
+    "DeletedAt"    TIMESTAMPTZ NULL,
+    "CreatedBy"    UUID NOT NULL,
+    "UpdatedBy"    UUID NULL,
+    "Street"       TEXT NOT NULL,
+    "City"         TEXT NOT NULL,
+    "State"        TEXT NOT NULL,
+    "PostalCode"   TEXT NOT NULL,
+    "Country"      TEXT NOT NULL
+);

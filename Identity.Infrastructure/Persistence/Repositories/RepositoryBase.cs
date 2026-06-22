@@ -9,7 +9,7 @@ public class RepositoryBase<TEntity, TKey>
     : IRepositoryBase<TEntity, TKey>
     where TEntity : class
 {
-    private readonly AppDbContext _context;
+    public readonly AppDbContext _context;
 
     public RepositoryBase(AppDbContext context)
         => _context = context ?? throw new ArgumentNullException(nameof(context));
